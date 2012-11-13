@@ -1,1 +1,5 @@
-// JavaScript source code
+
+
+(function (window, undefined) {
+
+})(this);
