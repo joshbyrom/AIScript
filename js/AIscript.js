@@ -1,7 +1,27 @@
 (function (window, undefined) {
+    // main object and entry point
+    // provides access to processing.js to simulations
     function AIscript() {
         this.canvas = null;
         this.pInst = null;
+
+        this.simulation = null;
+        this.last = null;
+    }
+
+    AIscript.prototype.simulate = function (simulation) {
+        if (this.simulation === simulation ||
+                 simulation === undefined)
+            return;
+
+        if (this.simulation !== undefined) {
+            this.simulation.exit(simulation);
+        }
+
+        this.last = this.simulation;
+        this.simulation = simulation;
+
+        this.simulation.enter(this.last);
     }
 
     AIscript.prototype.width = function () {
@@ -26,6 +46,10 @@
         return (function (processing) {
             return function () {
                 processing.size(this.width(), this.height());
+                if (this.simulation) {
+                    this.simulation.update();
+                    this.simulation.draw();
+                }
             }.bind(this);
         }).call(this, processing);
     };
