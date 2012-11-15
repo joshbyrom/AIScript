@@ -84,6 +84,6 @@
         }
     }
 
-    var ai = new AIscript();
-    addOnloadEvent(ai.start.bind(ai));
+    this.aiScript = new AIscript();
+    addOnloadEvent(this.aiScript.start.bind(this.aiScript));
 })(this);
