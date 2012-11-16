@@ -1,8 +1,12 @@
-AIScript.modules.Entity = function(aiScript) {
-    aiScript.Entity = function (x, y, width, height) {
+var count = 0;
+
+AIScript.modules.Entities = function (aiScript, modules) {
+    var Point = modules.Space.Point;
+
+    this.Entity = function Entity(x, y, width, height) {
         this.position = new Point(x, y);
-        this.velocity = new Vector();
-        this.acceleration = new Vector();
+        this.velocity = new Point();
+        this.acceleration = new Point();
 
         this.maxForce = 40;
         this.maxSpeed = 12;
@@ -13,7 +17,7 @@ AIScript.modules.Entity = function(aiScript) {
         this.behaviors = [];
     };
 
-    aiScript.Entity.prototype.applyForce = function (x, y) {
+    this.Entity.prototype.applyForce = function (x, y) {
         this.ax += x;
         this.ay += y;
 

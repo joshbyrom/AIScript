@@ -29,7 +29,7 @@
         var fn;
         for (var i = 0; i < modules.length; i += 1) {
             fn = AIScript.modules[modules[i]];
-            fn.call(fn, this); // init modules
+            fn.call(fn, this, AIScript.modules); // init modules
         }
 
         callback.call(this, AIScript.modules);
@@ -133,10 +133,10 @@ AIScript.modules.Goodbye = function Goodbye(aiScript) {
 }
 
 addEvent(window, 'load', function () {
-    AIScript('Say', 'Goodbye', function (box) {
-        console.log(box.Say.sayHello());
-        console.log(box.Goodbye.sayGoodbye());
-        
+    AIScript('Space', 'Entities', function (box) {
+        var e = new box.Entities.Entity(0, 0, 1, 2);
+        console.dir(e);
+
         this.start();
     });
 });
