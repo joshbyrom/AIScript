@@ -1,5 +1,5 @@
-(function (window, undefined) {
-    function Entity(x, y, width, height) {
+AIScript.modules.Entity = function(aiScript) {
+    aiScript.Entity = function Entity(x, y, width, height) {
         this.position = new Point(x, y);
         this.velocity = new Vector();
         this.acceleration = new Vector();
@@ -13,7 +13,7 @@
         this.behaviors = [];
     };
 
-    Entity.prototype.applyForce = function(x, y) {
+    aiScript.Entity.prototype.applyForce = function (x, y) {
         this.ax += x;
         this.ay += y;
 
@@ -28,7 +28,4 @@
 
         return this.maxForce - this.force; // return how much force we have left
     };
-
-    var test = new Entity(0, 0, 100, 100);
-
-})(this);
+};
