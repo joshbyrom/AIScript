@@ -1,5 +1,5 @@
 AIScript.modules.Entity = function(aiScript) {
-    aiScript.Entity = function Entity(x, y, width, height) {
+    aiScript.Entity = function (x, y, width, height) {
         this.position = new Point(x, y);
         this.velocity = new Vector();
         this.acceleration = new Vector();
@@ -20,7 +20,7 @@ AIScript.modules.Entity = function(aiScript) {
         var magnitude = Math.sqrt(this.ax * this.ax + this.ay * this.ay);
         if (this.magnitude > this.maxForce) {
             this.ax = (this.ax / magnitude) * this.maxForce;
-            this.ay = (this.ay / magniture) * this.maxForce;
+            this.ay = (this.ay / magnitude) * this.maxForce;
             this.force = this.maxForce;
         } else {
             this.force = magnitude;

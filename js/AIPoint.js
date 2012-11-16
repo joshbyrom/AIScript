@@ -1,7 +1,7 @@
 AIScript.modules.Point = function(aiScript) {
     var TwoPi = Math.PI * 2.0;
 
-    aiScript.Point = function Point(x, y) {
+    aiScript.Point = function (x, y) {
         this.x = x;
         this.y = y;
 
@@ -35,14 +35,14 @@ AIScript.modules.Point = function(aiScript) {
         var xdist = xy.x - this.x;
         var ydist = xy.y - this.y;
         return Math.sqrt(xdist * xdist + ydist * ydist);
-    }
+    };
 
     aiScript.Point.prototype.norm = function () {
         var magn = this.magn();
         this.x /= magn;
         this.y /= magn;
         return this;
-    }
+    };
 
     aiScript.Point.prototype.magn = function () {
         return Math.sqrt(this.x * this.x + this.y * this.y);
