@@ -32,63 +32,63 @@
             fn.call(fn, this); // init modules
         }
 
-        callback.call(AIScript.modules, this);
+        callback.call(this, AIScript.modules);
+    };
 
-        AIScript.prototype.simulate = function (simulation) {
-            if (this.simulation === simulation ||
-                     simulation === undefined)
-                return;
+    AIScript.prototype.simulate = function (simulation) {
+        if (this.simulation === simulation ||
+                 simulation === undefined)
+            return;
 
-            if (this.simulation !== undefined) {
-                this.simulation.exit(simulation);
-            }
+        if (this.simulation !== undefined) {
+            this.simulation.exit(simulation);
+        }
 
-            this.last = this.simulation;
-            this.simulation = simulation;
+        this.last = this.simulation;
+        this.simulation = simulation;
 
-            this.simulation.enter(this.last);
-            return this;    // using train wreck!
-        };
+        this.simulation.enter(this.last);
+        return this;    // using train wreck!
+    };
 
-        AIScript.prototype.width = function () {
-            if (this.canvas === undefined) return 0;
-            else return this.canvas.width;
-        };
+    AIScript.prototype.width = function () {
+        if (this.canvas === undefined) return 0;
+        else return this.canvas.width;
+    };
 
-        AIScript.prototype.height = function () {
-            if (this.canvas === undefined) return 0;
-            else return this.canvas.height;
-        };
+    AIScript.prototype.height = function () {
+        if (this.canvas === undefined) return 0;
+        else return this.canvas.height;
+    };
 
-        AIScript.prototype.setup = function (processing) {
-            return (function (processing) {
-                return function () {
-                    processing.size(this.width(), this.height());
-                }.bind(this);
-            }).call(this, processing);
-        };
+    AIScript.prototype.setup = function (processing) {
+        return (function (processing) {
+            return function () {
+                processing.size(this.width(), this.height());
+            }.bind(this);
+        }).call(this, processing);
+    };
 
-        AIScript.prototype.draw = function (processing) {
-            return (function (processing) {
-                return function () {
-                    processing.size(this.width(), this.height());
-                    if (this.simulation) {
-                        this.simulation.update();
-                        this.simulation.draw();
-                    }
-                }.bind(this);
-            }).call(this, processing);
-        };
+    AIScript.prototype.draw = function (processing) {
+        return (function (processing) {
+            return function () {
+                processing.size(this.width(), this.height());
+                if (this.simulation) {
+                    this.simulation.update();
+                    this.simulation.draw();
+                }
+            }.bind(this);
+        }).call(this, processing);
+    };
 
-        AIScript.prototype.mainLoop = function (processing) {
-            processing.setup = this.setup(processing);
-            processing.draw = this.draw(processing);
-        };
+    AIScript.prototype.mainLoop = function (processing) {
+        processing.setup = this.setup(processing);
+        processing.draw = this.draw(processing);
+    };
 
-        AIScript.prototype.start = function () {
-            this.canvas = document.getElementById("Main");
-            this.pInst = new Processing(this.canvas, this.mainLoop.bind(this));
-        };
+    AIScript.prototype.start = function () {
+        this.canvas = document.getElementById("Main");
+        this.pInst = new Processing(this.canvas, this.mainLoop.bind(this));
     };
 
     AIScript.modules = {}
@@ -97,22 +97,24 @@
 
 
 // this is for testing only :: TO_REMOVE
-function addOnloadEvent(fnc) {
-    if (typeof window.addEventListener != "undefined")
-        window.addEventListener("load", fnc, false);
+function addEvent(target, event, fnc) {
+    var onEvent = 'on' + event;
+
+    if (typeof target.addEventListener != "undefined")
+        target.addEventListener(event, fnc, false);
     else if (typeof window.attachEvent != "undefined") {
-        window.attachEvent("onload", fnc);
+        target.attachEvent(onEvent, fnc);
     }
     else {
-        if (window.onload != null) {
-            var oldOnload = window.onload;
-            window.onload = function (e) {
+        if (target.onEvent != null) {
+            var oldOnload = target.onEvent;
+            target.onEvent = function (e) {
                 oldOnload(e);
-                window[fnc]();
+                target[fnc]();
             };
         }
         else
-            window.onload = fnc;
+            target.onEvent = fnc;
     }
 }
 
@@ -130,10 +132,11 @@ AIScript.modules.Goodbye = function Goodbye(aiScript) {
     }
 }
 
-addOnloadEvent(function () {
+addEvent(window, 'load', function () {
     AIScript('Say', 'Goodbye', function (box) {
-        console.log(this.Say.sayHello());
-        console.log(this.Goodbye.sayGoodbye());
-        //addOnloadEvent(box.start.bind(box));
+        console.log(box.Say.sayHello());
+        console.log(box.Goodbye.sayGoodbye());
+        
+        this.start();
     });
 });
