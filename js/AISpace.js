@@ -54,4 +54,31 @@ AIScript.modules.Space = function (aiScript, modules) {
         var result = Math.atan2(ydist, xdist);
         return result < 0 ? result + TwoPi : result;
     };
+
+    // line class
+    this.Line = function Line(start, end) {
+        this.start = start;
+        this.end = end;
+    };
+
+    this.Line.prototype.collidesWith = function (otherLine) {
+
+    };
+
+    // poly class
+    this.Polygon = function Polygon() {
+        this.points = [];
+    };
+
+    this.Polygon.prototype.addPoint = function (point) {
+        this.points.push(point);
+    };
+
+    this.Polygon.prototype.removePoint = function (point) {
+        this.points.slice(this.points.indexOf(point), 1);
+    };
+
+    this.Polygon.prototype.collidesWith = function (otherPoly) {
+
+    };
 };
