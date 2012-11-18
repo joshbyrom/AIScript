@@ -95,21 +95,26 @@ AIScript.modules.Space = function (aiScript, modules) {
             c = other.start,
             d = other.end;
 
-        rTop=(a[1]-c[1])*(d[0]-c[0])-(a[0]-c[0])*(d[1]-c[1])
-        rBot=(b[0]-a[0])*(d[1]-c[1])-(b[1]-a[1])*(d[0]-c[0])
-        sTop=(a[1]-c[1])*(b[0]-a[0])-(a[0]-c[0])*(b[1]-a[1])
-        sBot=(b[0]-a[0])*(d[1]-c[1])-(b[1]-a[1])*(d[0]-c[0])
+        var rTop=(a.y-c.y)*(d.x-c.x)-(a.x-c.x)*(d.y-c.y);
+        var rBot=(b.x-a.x)*(d.y-c.y)-(b.y-a.y)*(d.x-c.x);
+        var sTop=(a.y-c.y)*(b.x-a.x)-(a.x-c.x)*(b.y-a.y);
+        var sBot=(b.x-a.x)*(d.y-c.y)-(b.y-a.y)*(d.x-c.x);
 
-        if sBot == 0.0 or rBot == 0.0:
-        return None
+        if (sBot === 0.0 || rBot === 0.0) {
+            return false;
+        }
 
-        inv_bot=1.0/bot
-        r=rTop*inv_bot
-        s=sTop*inv_bot
+        inv_bot=1.0/bot;
+        r=rTop*inv_bot;
+        s=sTop*inv_bot;
 
-        if r > 0 and r < 1 and s > 0 and s < 1:
-            return [(x-a[i])*r+a[i] for i,x in enumerate(b)]
-        return None
+        if (r > 0 && r < 1 && s > 0 && s < 1) {
+            var x = (b.x - a.x) * r + a.x;
+            var y = (b.y - a.y) * r + a.y;
+            return new Point(x, y);
+        }
+
+        return false;
     };
 
     // poly class

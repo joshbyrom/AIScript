@@ -37,10 +37,10 @@
 
     AIScript.prototype.simulate = function (simulation) {
         if (this.simulation === simulation ||
-                 simulation === undefined)
+                 simulation === null)
             return;
 
-        if (this.simulation !== undefined) {
+        if (this.simulation !== null) {
             this.simulation.exit(simulation);
         }
 
@@ -73,9 +73,14 @@
         return (function (processing) {
             return function () {
                 processing.size(this.width(), this.height());
+
+                processing.fill(0, 0, 0);
+                processing.noStroke();
+                processing.rect(0, 0, this.width(), this.height());
+
                 if (this.simulation) {
                     this.simulation.update();
-                    this.simulation.draw();
+                    this.simulation.draw(processing);
                 }
             }.bind(this);
         }).call(this, processing);
@@ -133,10 +138,11 @@ AIScript.modules.Goodbye = function Goodbye(aiScript) {
 }
 
 addEvent(window, 'load', function () {
-    AIScript('Space', 'Entities', function (box) {
+    AIScript('Space', 'Entities', 'Simulations', function (box) {
         var e = new box.Entities.Entity(0, 0, 1, 2);
         console.dir(e);
 
+        this.simulate(new box.Simulations.LineTestSimulation());
         this.start();
     });
 });
