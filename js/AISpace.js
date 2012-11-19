@@ -64,12 +64,44 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     this.Point.prototype.rotate = function (theta) {
-        var cos = Math.cos(theta);
-        var sin = Math.sin(theta);
+        var _theta = theta % TwoPi;
+
+        var cos = Math.cos(_theta);
+        var sin = Math.sin(_theta);
 
         this.x = this.x * cos - sin * this.y;
         this.y = this.y * sin + cos * this.y;
         return this;
+    };
+
+    this.Point.prototype.rotateAround = function (center, theta) {
+        var originX = this.x - center.x;
+        var originY = this.y - center.y;
+
+        var cos = Math.cos(theta);
+        var sin = Math.sin(theta);
+
+        this.x = (originX * cos - originY * sin) + center.x;
+        this.y = (originY * cos + originX * sin) + center.y;
+        return this;
+    };
+
+    // returns a rotated normalized vector
+    this.Point.prototype.rotatedNorm = function (theta) {
+        return this.rotated(theta).norm();
+    };
+
+    // unlike rotate, this return a rotated version and does not rotate in place
+    this.Point.prototype.rotated = function (theta) {
+        var _theta = theta % TwoPi;
+        var ret = new modules.Space.Point(0, 0);
+
+        var cos = Math.cos(_theta);
+        var sin = Math.sin(_theta);
+
+        ret.x = this.x * cos - sin * this.y;
+        ret.y = this.y * sin + cos * this.y;
+        return ret;
     };
 
     this.Point.prototype.zero = function (xy) {
@@ -96,11 +128,10 @@ AIScript.modules.Space = function (aiScript, modules) {
             d = other.end;
 
         var rTop=(a.y-c.y)*(d.x-c.x)-(a.x-c.x)*(d.y-c.y);
-        var rBot=(b.x-a.x)*(d.y-c.y)-(b.y-a.y)*(d.x-c.x);
         var sTop=(a.y-c.y)*(b.x-a.x)-(a.x-c.x)*(b.y-a.y);
-        var sBot=(b.x-a.x)*(d.y-c.y)-(b.y-a.y)*(d.x-c.x);
+        var bot=(b.x-a.x)*(d.y-c.y)-(b.y-a.y)*(d.x-c.x);
 
-        if (sBot === 0.0 || rBot === 0.0) {
+        if (bot === 0.0) {
             return false;
         }
 
@@ -111,7 +142,7 @@ AIScript.modules.Space = function (aiScript, modules) {
         if (r > 0 && r < 1 && s > 0 && s < 1) {
             var x = (b.x - a.x) * r + a.x;
             var y = (b.y - a.y) * r + a.y;
-            return new Point(x, y);
+            return new modules.Space.Point(x, y);
         }
 
         return false;
