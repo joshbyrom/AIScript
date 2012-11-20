@@ -1,0 +1,12 @@
+#AIScript
+I created this project to act as a framework to easily implement my projects using JavaScript.
+##Scene Graph
+My projects will be using the processing.js library for rendering. More info can be found at: http://processingjs.org/
+##Information
+Samples of how to use this project and descriptions of the objects are coming soon!
+##External Resources Required
+You page will need to include the modules you will be using from the AIScript library as well as the processing.js file.
+##Work in Progress
+This project is a work in progress and some commit pushes may even break its functionality completely! 
+
+Enjoy!
