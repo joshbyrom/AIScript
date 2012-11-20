@@ -148,6 +148,40 @@ AIScript.modules.Space = function (aiScript, modules) {
         return false;
     };
 
+    this.Line.prototype.angle = function () {
+        return this.start.angleTo(this.end);
+    };
+
+    // circle class
+    this.Circle = function Circle(point, radius) {
+        this.center = point || new modules.Space.Point(0, 0);
+        this.radius = radius || 0;
+    };
+
+    this.Circle.prototype.intersectsCircle = function(circle) {
+        var dist = this.center.dist(circle.center);
+        if (dist < this.radius + circle.radius || dist < Math.abs(this.radius - circle.radius)) {
+            var a = (this.radius - other.radius + (dist * dist)) / (dist * 2);
+            var x = this.center.x + a * (circle.center.x - this.center.x) / dist;
+            var y = this.center.y + a * (circle.center.y - this.center.y) / dist;
+
+            var h1 = Math.sqrt((this.radius * this.radius) - (a * a));
+            var yMod = h1 * (circle.center.y - this.center.y) / dist;
+            var xMod = h1 * (circle.center.x - this.center.x) / dist;
+            return [new modules.Space.Point(x - yMod, y + xMod),
+                    new modules.SPace.Point(x + yMod, y - xMod)];
+        } else {
+            return false;
+        }
+    };
+
+    this.Circle.prototype.fromLine = function (line) {
+        this.center.x = line.start.x;
+        this.center.y = line.start.y;
+        this.radius = line.start.dist(line.end);
+        return this;
+    };
+
     // poly class
     this.Polygon = function Polygon() {
         this.points = [];

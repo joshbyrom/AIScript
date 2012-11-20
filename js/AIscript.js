@@ -140,7 +140,6 @@ AIScript.modules.Goodbye = function Goodbye(aiScript) {
 addEvent(window, 'load', function () {
     AIScript('Space', 'Entities', 'Simulations', function (box) {
         var e = new box.Entities.Entity(0, 0, 1, 2);
-        console.dir(e);
 
         this.simulate(new box.Simulations.LineTestSimulation());
         this.start();

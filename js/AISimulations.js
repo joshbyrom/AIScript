@@ -1,20 +1,18 @@
 AIScript.modules.Simulations = function (aiScript, modules) {
     var Line = modules.Space.Line;
     var Point = modules.Space.Point;
+    var Circle = modules.Space.Circle;
 
     this.LineTestSimulation = function () {
 
     };
 
     this.LineTestSimulation.prototype.enter = function (last) {
-        this.rot = 0.0;
-        
-        this.radius1 = 70.0;
-        this.diameter1 = this.radius1 * 2.0;
-        this.line1 = new Line(new Point(400, 300), new Point());
-
+        this.line1 = new Line(new Point(400, 300), new Point(470, 300));
         this.line2 = new Line(new Point(544, 134), new Point(757, 134));
 
+        this.circle1 = new Circle(this.line1.start, 70);
+        this.circle2 = new Circle(this.line2.start, 214);
         this.intersectPoint = false;
     };
 
@@ -23,24 +21,22 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.LineTestSimulation.prototype.update = function () {
-        var onRadius1 = this.line1.start.rotatedNorm(this.rot);
-        this.line1.end = onRadius1.mul(this.radius1).add(this.line1.start);
+        var angle1 = this.line1.angle();
+        var angle2 = this.line2.angle();
 
-        this.line2.end.rotateAround(this.line2.start, -0.01);
+        this.line1.end.rotateAround(this.line1.start, angle1 > 4.09 || (angle1 >= 0 && angle1 <= 0.50) ? 0.001 : 0.03);
+        this.line2.end.rotateAround(this.line2.start, angle2 < 2.6 && angle2 >= 1.97 ? -0.001 : -0.03);
 
         this.intersectPoint = this.line1.intersectsLine(this.line2);
 
-        this.rot += 0.01;
     };
 
     this.LineTestSimulation.prototype.draw = function (processing) {
         this.drawLine(processing, this.line1);
         this.drawLine(processing, this.line2);
 
-        processing.strokeWeight(1);
-        processing.fill(0,0,0,0);
-        processing.ellipse(this.line1.start.x, this.line1.start.y, this.diameter1, this.diameter1);
-        processing.ellipse(this.line2.start.x, this.line2.start.y, 428, 428);
+        this.drawCircle(processing, this.circle1);
+        this.drawCircle(processing, this.circle2);
 
         if (this.intersectPoint) {
             processing.fill(255, 0, 0);
@@ -57,4 +53,11 @@ AIScript.modules.Simulations = function (aiScript, modules) {
                         line.end.y);
     };
 
+    this.LineTestSimulation.prototype.drawCircle = function (processing, circle) {
+        var diameter = circle.radius * 2;
+
+        processing.strokeWeight(1);
+        processing.fill(0, 0, 0, 0);
+        processing.ellipse(circle.center.x, circle.center.y, diameter, diameter);
+    };
 };
