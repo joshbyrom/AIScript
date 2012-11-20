@@ -30,6 +30,13 @@ AIScript.modules.Space = function (aiScript, modules) {
         return Math.sqrt(xdist * xdist + ydist * ydist);
     };
 
+    this.Point.prototype.distSq = function (xy) {
+        var xdist = xy.x - this.x;
+        var ydist = xy.y - this.y;
+        return xdist * xdist + ydist * ydist;
+    };
+
+
     this.Point.prototype.norm = function () {
         var magn = this.magn();
         this.x /= magn;
@@ -210,6 +217,48 @@ AIScript.modules.Space = function (aiScript, modules) {
         if (ret.second) {
             ret.second = ret.second.isOnLine(this);
         }
+
+        return ret;
+    };
+
+    this.Line.prototype.closestIntersectPointWithCircles = function (circles) {
+        var ret = { shortestDistance:Number.MAX_VALUE, iPoint: false };
+
+        var from = new modules.Space.Point((this.start.x + this.end.x) * 0.5, (this.start.y + this.end.y) * 0.5);
+        var current, dist, dist2;
+        var args = Array.prototype.slice.call(arguments);
+
+        for (var i = 0; i < args.length; ++i) {
+            current = this.intersectsCircle(args[i]);
+
+            if (current.first && current.second) {
+                dist = from.distSq(current.first);
+                dist2 = from.distSq(current.second);
+                if (dist < dist2) {
+                    if (dist < ret.shortestDistance) {
+                        ret.shortestDistance = dist;
+                        ret.iPoint = current.first;
+                    }
+                } else {
+                    if (dist2 < ret.shortestDistance) {
+                        ret.shortestDistance = dist2;
+                        ret.iPoint = current.second;
+                    }
+                }
+            } else if (current.first) {
+                dist = from.distSq(current.first);
+                if (dist < ret.shortestDistance) {
+                    ret.shortestDistance = dist;
+                    ret.iPoint = current.first;
+                }
+            } else if (current.second) {
+                dist = from.distSq(current.second);
+                if (dist < ret.shortestDistance) {
+                    ret.iPoint = current.second;
+                    ret.shortestDistance = dist;
+                }
+            }
+        };
 
         return ret;
     };
