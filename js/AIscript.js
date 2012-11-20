@@ -15,6 +15,7 @@
         this.pInst = null;
 
         this.simulation = null;
+        this.paused = false;
         this.last = null;
 
         if (!modules || modules === '*') {
@@ -48,7 +49,7 @@
         this.simulation = simulation;
 
         this.simulation.enter(this.last);
-        return this;    // using train wreck!
+        return this;    
     };
 
     AIScript.prototype.width = function () {
@@ -79,8 +80,21 @@
                 processing.rect(0, 0, this.width(), this.height());
 
                 if (this.simulation) {
-                    this.simulation.update();
+                    if (!this.paused) {
+                        this.simulation.update();
+                    };
                     this.simulation.draw(processing);
+                    if (this.paused) {
+                        processing.fill(255, 255, 255, 51);
+
+                        for (var i = 0; i < 4; ++i) {
+                            processing.text("PAUSED", 12 + Math.random() * 8, 56 + Math.random() * 8);
+                        }
+
+                        processing.fill(255, 102, 153);
+                        processing.text("PAUSED", 14 + Math.random() * 1.1, 59 + Math.random() * 1.2);
+                        processing.fill(255, 156, 156, 51);
+                    };
                 }
             }.bind(this);
         }).call(this, processing);
@@ -89,6 +103,32 @@
     AIScript.prototype.mainLoop = function (processing) {
         processing.setup = this.setup(processing);
         processing.draw = this.draw(processing);
+        processing.keyPressed = this.handleKeyPressed(processing);
+        processing.keyReleased = this.handleKeyReleased(processing);
+    };
+
+    AIScript.prototype.handleKeyPressed = function (processing) {
+        return (function () {
+            return function () {
+                if (this.simulation) {
+                    if (this.simulation.handleKeyPressed) {
+                        this.simulation.handleKeyPressed(processing.keyCode);
+                    }
+                }
+            }.bind(this);
+        }).call(this);
+    };
+
+    AIScript.prototype.handleKeyReleased = function (processing) {
+        return (function () {
+            return function () {
+                if (this.simulation) {
+                    if (this.simulation.handleKeyReleased) {
+                        this.simulation.handleKeyReleased(processing.keyCode);
+                    }
+                }
+            }.bind(this);
+        }).call(this);
     };
 
     AIScript.prototype.start = function () {

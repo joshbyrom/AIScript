@@ -111,14 +111,30 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     this.Point.prototype.isInRegion = function (topLeft, botRight) {
-        return this.x > topLeft.x && this.x < botRight.y &&
-               this.y < topLeft.y && this.y > botRight.y;
+        return this.x >= topLeft.x && this.x <= botRight.y &&
+               this.y >= topLeft.y && this.y <= botRight.y;
+    };
+
+    this.Point.prototype.isOnLine = function (line) {   // fast, inaccurate check
+        var topLeft = new modules.Space.Point(Math.min(line.start.x, line.end.x), Math.min(line.start.y, line.end.y));
+        var botRight = new modules.Space.Point(Math.max(line.start.x, line.end.x), Math.max(line.start.y, line.end.y));
+
+        return Math.abs((line.start.y - this.y) / (line.start.x - this.x) - line.slope()) < 0.0004 &&
+               this.isInRegion(topLeft, botRight) ? this : false;
     };
 
     // line class
     this.Line = function Line(start, end) {
         this.start = start;
         this.end = end;
+    };
+
+    this.Line.prototype.slope = function () {
+        return (this.start.y - this.end.y) / (this.start.x - this.end.x);
+    };
+
+    this.Line.prototype.YIntersect = function () {
+        return -this.slope() * this.start.x / this.start.y;
     };
 
     this.Line.prototype.intersectsLine = function (other) {
@@ -146,6 +162,62 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
 
         return false;
+    };
+
+    this.Line.prototype.intersectsCircle = function (circle) {
+        var ret = {
+            first: false,
+            second: false
+        };
+
+        var dx = this.end.x - this.start.x;
+        var dy = this.end.y - this.start.y;
+
+        var a = dx * dx + dy * dy;
+        var b = 2 * (dx * (this.start.x - circle.center.x) +
+                     dy * (this.start.y - circle.center.y));
+
+        var c = circle.center.x * circle.center.x +
+                circle.center.y * circle.center.y +
+                this.start.x * this.start.x +
+                this.start.y * this.start.y -
+                2 * (circle.center.x * this.start.x + circle.center.y * this.start.y) -
+                circle.radius * circle.radius;
+
+        var bb4ac = b * b - 4 * a * c;
+        if (bb4ac < 0) {
+            return ret;
+        } else if (bb4ac === 0) {
+            var mu1 = -b / 2 * a;
+
+            ret.first = new modules.Space.Point(this.start.x + mu1 * dx, this.start.y + mu1 * dy);
+        } else {
+
+            var bb4acSqrt = Math.sqrt(bb4ac);
+
+            var mu1 = (-b + bb4acSqrt) / (2 * a);
+            var mu2 = (-b - bb4acSqrt) / (2 * a);
+
+            
+            ret.first = new modules.Space.Point(this.start.x + mu1 * dx, this.start.y + mu1 * dy);
+            ret.second = new modules.Space.Point(this.start.x + mu2 * dx, this.start.y + mu2 * dy);
+        }
+
+        if (ret.first) {
+            ret.first = ret.first.isOnLine(this);
+            if (!ret.first) {
+                var topLeft = new modules.Space.Point(Math.min(this.start.x, this.end.x), Math.min(this.start.y, this.end.y));
+                var botRight = new modules.Space.Point(Math.max(this.start.x, this.end.x), Math.max(this.start.y, this.end.y));
+                //console.log('point rejected -- outside region ', topLeft, botRight);
+                //console.log(new modules.Space.Point(this.start.x + mu1 * dx, this.start.y + mu1 * dy));
+            }
+        }
+
+        if (ret.second) {
+            ret.second = ret.second.isOnLine(this);
+        }
+
+        return ret;
     };
 
     this.Line.prototype.angle = function () {
@@ -191,6 +263,10 @@ AIScript.modules.Space = function (aiScript, modules) {
         this.center.y = line.start.y;
         this.radius = line.start.dist(line.end);
         return this;
+    };
+
+    this.Circle.prototype.intersectsLine = function (line) {
+        return line.intersectsCircle(this);
     };
 
     // poly class
