@@ -49,14 +49,17 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     this.LineTestSimulation.prototype.draw = function (processing) {
         this.drawLine(processing, this.line1);
         this.drawLine(processing, this.line2);
-        if (this.circleIntersectsLine && this.circleIntersectsLine.first) {
-            processing.ellipse(this.circleIntersectsLine.first.x, this.circleIntersectsLine.first.y, 6, 6);
-            processing.stroke(255, 255, 255);
-            processing.strokeWeight(2);
-            processing.line(this.line3.start.x,
-                            this.line3.start.y,
-                            this.circleIntersectsLine.first.x,
-                            this.circleIntersectsLine.first.y);
+        if (this.circleIntersectsLine) {
+            if (this.circleIntersectsLine.first) {
+                processing.ellipse(this.circleIntersectsLine.first.x, this.circleIntersectsLine.first.y, 6, 6);
+                processing.stroke(255, 255, 255);
+                processing.strokeWeight(2);
+                processing.line(this.line3.start.x,
+                                this.line3.start.y,
+                                this.circleIntersectsLine.first.x,
+                                this.circleIntersectsLine.first.y);
+            }
+
             if (this.circleIntersectsLine.second) {
                 processing.ellipse(this.circleIntersectsLine.second.x, this.circleIntersectsLine.second.y, 6, 6);
                 processing.stroke(255, 0, 0);

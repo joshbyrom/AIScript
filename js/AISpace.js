@@ -111,7 +111,7 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     this.Point.prototype.isInRegion = function (topLeft, botRight) {
-        return this.x >= topLeft.x && this.x <= botRight.y &&
+        return this.x >= topLeft.x && this.x <= botRight.x &&
                this.y >= topLeft.y && this.y <= botRight.y;
     };
 
@@ -205,12 +205,6 @@ AIScript.modules.Space = function (aiScript, modules) {
 
         if (ret.first) {
             ret.first = ret.first.isOnLine(this);
-            if (!ret.first) {
-                var topLeft = new modules.Space.Point(Math.min(this.start.x, this.end.x), Math.min(this.start.y, this.end.y));
-                var botRight = new modules.Space.Point(Math.max(this.start.x, this.end.x), Math.max(this.start.y, this.end.y));
-                //console.log('point rejected -- outside region ', topLeft, botRight);
-                //console.log(new modules.Space.Point(this.start.x + mu1 * dx, this.start.y + mu1 * dy));
-            }
         }
 
         if (ret.second) {
