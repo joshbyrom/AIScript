@@ -13,7 +13,9 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         this.circle1 = new Circle(this.line1.start, 70);
         this.circle2 = new Circle(this.line2.start, 214);
+
         this.intersectPoint = false;
+        this.circleIntersectPoints = false;
     };
 
     this.LineTestSimulation.prototype.exit = function (next) {
@@ -28,7 +30,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.line2.end.rotateAround(this.line2.start, angle2 < 2.6 && angle2 >= 1.97 ? -0.001 : -0.03);
 
         this.intersectPoint = this.line1.intersectsLine(this.line2);
-
+        this.circleIntersectPoints = this.circle1.intersectsCircle(this.circle2);
     };
 
     this.LineTestSimulation.prototype.draw = function (processing) {

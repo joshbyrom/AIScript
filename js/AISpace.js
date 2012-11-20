@@ -161,7 +161,7 @@ AIScript.modules.Space = function (aiScript, modules) {
     this.Circle.prototype.intersectsCircle = function(circle) {
         var dist = this.center.dist(circle.center);
         if (dist < this.radius + circle.radius || dist < Math.abs(this.radius - circle.radius)) {
-            var a = (this.radius - other.radius + (dist * dist)) / (dist * 2);
+            var a = (this.radius - circle.radius + (dist * dist)) / (dist * 2);
             var x = this.center.x + a * (circle.center.x - this.center.x) / dist;
             var y = this.center.y + a * (circle.center.y - this.center.y) / dist;
 
@@ -169,7 +169,7 @@ AIScript.modules.Space = function (aiScript, modules) {
             var yMod = h1 * (circle.center.y - this.center.y) / dist;
             var xMod = h1 * (circle.center.x - this.center.x) / dist;
             return [new modules.Space.Point(x - yMod, y + xMod),
-                    new modules.SPace.Point(x + yMod, y - xMod)];
+                    new modules.Space.Point(x + yMod, y - xMod)];
         } else {
             return false;
         }
