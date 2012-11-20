@@ -177,12 +177,7 @@ AIScript.modules.Space = function (aiScript, modules) {
             var rx = -dy * hOverD;
             var ry = dx * hOverD;
 
-
-
             return {
-                //first : new modules.Space.Point(x - yMod, y + xMod),
-                //second: new modules.Space.Point(x + yMod, y - xMod)
-
                 first: new modules.Space.Point(x2 + rx, y2 + ry),
                 second : new modules.Space.Point(x2 - rx, y2 - ry)
             };

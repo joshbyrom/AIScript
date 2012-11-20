@@ -12,13 +12,29 @@ My projects will be using the processing.js library for rendering. More info can
 Information & Usage
 ------------------
 
-Samples of how to use this project and descriptions of the objects are coming soon!
+Samples of how to use this project and descriptions of the objects within are coming soon!
 
 
 External Resources Required
 ------------------
 
-You page will need to include the modules you will be using from the AIScript library as well as the processing.js file.
+As mentioned processing.js is used as the scene graph for the framework, but this can be easily changed.
+
+Until a build process if created, your page will need to include the modules you will be using from the AIScript library as well as the processing.js file if you choose to use it.
+
+For example, the very first simulation I created used the Space, Entity, and Simulations modules and was started like this:
+
+addEvent(window, 'load', function () {
+    AIScript('Space', 'Entities', 'Simulations', function (box) {
+	// Space, Entity, and Simulations are included in the box object
+        var e = new box.Entities.Entity(0, 0, 1, 2);	// this was just for testing
+
+        this.simulate(new box.Simulations.LineTestSimulation());
+        this.start();
+    });
+});
+
+This is commonly referred to as sandboxing.
 
 
 Notes
