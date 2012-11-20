@@ -160,17 +160,31 @@ AIScript.modules.Space = function (aiScript, modules) {
 
     this.Circle.prototype.intersectsCircle = function(circle) {
         var dist = this.center.dist(circle.center);
-        if (dist < this.radius + circle.radius || dist < Math.abs(this.radius - circle.radius)) {
-            var a = (this.radius - circle.radius + (dist * dist)) / (dist * 2);
-            var x = this.center.x + a * (circle.center.x - this.center.x) / dist;
-            var y = this.center.y + a * (circle.center.y - this.center.y) / dist;
+        if (dist < this.radius + circle.radius || dist > Math.abs(this.radius - circle.radius)) {
+            var a = (this.radius * this.radius - circle.radius * circle.radius + (dist * dist)) / (dist * 2);
 
-            var h1 = Math.sqrt((this.radius * this.radius) - (a * a));
-            var yMod = h1 * (circle.center.y - this.center.y) / dist;
-            var xMod = h1 * (circle.center.x - this.center.x) / dist;
+            var dx = circle.center.x - this.center.x;
+            var dy = circle.center.y - this.center.y;
+
+            var aOverD = a / dist;
+
+            var x2 = this.center.x + (dx * aOverD);
+            var y2 = this.center.y + (dy * aOverD);
+
+            var h = Math.sqrt(Math.abs((this.radius * this.radius) - (a * a)));
+
+            var hOverD = h / dist;
+            var rx = -dy * hOverD;
+            var ry = dx * hOverD;
+
+
+
             return {
-                first : new modules.Space.Point(x - yMod, y + xMod),
-                second: new modules.Space.Point(x + yMod, y - xMod)
+                //first : new modules.Space.Point(x - yMod, y + xMod),
+                //second: new modules.Space.Point(x + yMod, y - xMod)
+
+                first: new modules.Space.Point(x2 + rx, y2 + ry),
+                second : new modules.Space.Point(x2 - rx, y2 - ry)
             };
         } else {
             return false;

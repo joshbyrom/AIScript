@@ -12,7 +12,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.line2 = new Line(new Point(544, 134), new Point(757, 134));
 
         this.circle1 = new Circle(this.line1.start, 70);
-        this.circle2 = new Circle(this.line2.start, 214);
+        this.circle2 = new Circle(this.line2.start, 213);
 
         this.intersectPoint = false;
         this.circleIntersectPoints = false;
