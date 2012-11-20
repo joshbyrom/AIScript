@@ -44,6 +44,12 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             processing.fill(255, 0, 0);
             processing.ellipse(this.intersectPoint.x, this.intersectPoint.y, 6, 6);
         }
+
+        if (this.circleIntersectPoints) {
+            processing.fill(255, 0, 0);
+            processing.ellipse(this.circleIntersectPoints.first.x, this.circleIntersectPoints.first.y, 6, 6);
+            processing.ellipse(this.circleIntersectPoints.second.x, this.circleIntersectPoints.second.y, 6, 6);
+        }
     };
 
     this.LineTestSimulation.prototype.drawLine = function (processing, line) {

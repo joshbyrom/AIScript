@@ -168,8 +168,10 @@ AIScript.modules.Space = function (aiScript, modules) {
             var h1 = Math.sqrt((this.radius * this.radius) - (a * a));
             var yMod = h1 * (circle.center.y - this.center.y) / dist;
             var xMod = h1 * (circle.center.x - this.center.x) / dist;
-            return [new modules.Space.Point(x - yMod, y + xMod),
-                    new modules.Space.Point(x + yMod, y - xMod)];
+            return {
+                first : new modules.Space.Point(x - yMod, y + xMod),
+                second: new modules.Space.Point(x + yMod, y - xMod)
+            };
         } else {
             return false;
         }
