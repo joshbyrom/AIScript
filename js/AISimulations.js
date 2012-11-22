@@ -2,6 +2,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Line = modules.Space.Line;
     var Point = modules.Space.Point;
     var Circle = modules.Space.Circle;
+    var Polygon = modules.Space.Polygon;
 
     this.LineTestSimulation = function () {
 
@@ -54,7 +55,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     this.LineTestSimulation.prototype.draw = function (processing) {
         this.drawLine(processing, this.line1);
         this.drawLine(processing, this.line2);
-        if (this.circlesIntersectLine.iPoint) {
+        if (this.circlesIntersectLine && this.circlesIntersectLine.iPoint) {
             processing.ellipse(this.circlesIntersectLine.iPoint.x, this.circlesIntersectLine.iPoint.y, 6, 6);
             processing.stroke(255, 0, 0);
             processing.strokeWeight(2);
@@ -98,5 +99,86 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         processing.strokeWeight(1);
         processing.fill(0, 0, 0, 0);
         processing.ellipse(circle.center.x, circle.center.y, diameter, diameter);
+    };
+
+    //------------------------
+
+    this.PolygonSimulation = function () {
+
+    };
+
+    this.PolygonSimulation.prototype.enter = function (last) {
+        this.line = new Line(new Point(150, 10), new Point(320, 10));
+        this.iPoints = [];
+
+        this.poly1 = new Polygon();
+        this.poly1.addPoint(new Point(220, 220));
+        this.poly1.addPoint(new Point(240, 220));
+        this.poly1.addPoint(new Point(240, 240));
+        this.poly1.addPoint(new Point(260, 240));
+        this.poly1.addPoint(new Point(260, 260));
+        this.poly1.addPoint(new Point(220, 260));
+
+        this.poly2 = new Polygon();
+        this.poly2.addPoint(new Point(140, 120));
+        this.poly2.addPoint(new Point(160, 120));
+        this.poly2.addPoint(new Point(180, 140));
+        this.poly2.addPoint(new Point(140, 160));
+
+    };
+
+    this.PolygonSimulation.prototype.exit = function (next) {
+
+    };
+
+    this.PolygonSimulation.prototype.update = function () {
+        var y = (this.line.start.y + 1) % aiScript.height();
+        this.line.start.y = y;
+        this.line.end.y = y;
+
+        this.iPoints = [];
+        this.iPoints = this.line.intersectsPolygon(this.poly1);
+        this.iPoints = Array.prototype.concat(this.iPoints, this.line.intersectsPolygon(this.poly2));
+    };
+
+    this.PolygonSimulation.prototype.draw = function (processing) {
+        processing.fill(123, 145, 213);
+        processing.stroke(255, 255, 255);
+        this.drawPolygon(processing, this.poly1);
+        this.drawPolygon(processing, this.poly2);
+
+        processing.strokeWeight(2);
+        if (this.iPoints.length === 0) {
+            processing.line(this.line.start.x, this.line.start.y, this.line.end.x, this.line.end.y);
+        } else {
+            var iPoint = this.line.start.closest(this.iPoints);
+            if (!this.poly2.isPointInside(this.line.start)) {
+                processing.line(this.line.start.x, this.line.start.y, iPoint.x, iPoint.y);
+            }
+
+            iPoint = this.line.end.closest(this.iPoints);
+            processing.line(iPoint.x, iPoint.y, this.line.end.x, this.line.end.y);
+        }
+
+        processing.strokeWeight(1);
+        processing.fill(255, 0, 0);
+        for (var i = 0; i < this.iPoints.length; ++i) {
+            processing.ellipse(this.iPoints[i].x,
+                               this.iPoints[i].y,
+                               6, 6);
+        }
+    };
+
+    this.PolygonSimulation.prototype.drawPolygon = function (processing, polygon) {
+        var n = polygon.points.length,
+            current = null;
+
+        processing.beginShape();
+        for (var i = 0; i < n; ++i) {
+            current = polygon.points[i];
+            processing.vertex(current.x, current.y);
+        }
+
+        processing.endShape(processing.CLOSE);
     };
 };

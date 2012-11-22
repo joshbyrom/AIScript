@@ -130,6 +130,30 @@ AIScript.modules.Space = function (aiScript, modules) {
                this.isInRegion(topLeft, botRight) ? this : false;
     };
 
+    this.Point.prototype.closest = function () {
+        var args = Array.prototype.slice.call(arguments);
+        args = (args[0] && typeof args[0] === 'string') ? args : args[0];
+
+        var closest = null,
+            closestDist = Number.MAX_VALUE;
+
+        var current = null,
+            currentDist = 0;
+
+        for (var i = 0; i < args.length; ++i) {
+            current = args[i];
+            currentDist = this.distSq(current);
+
+            if (currentDist < closestDist) {
+                closest = current;
+                closestDist = currentDist;
+            }
+        }
+
+        return closest;
+    };
+
+
     // line class
     this.Line = function Line(start, end) {
         this.start = start;
@@ -169,6 +193,31 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
 
         return false;
+    };
+
+    this.Line.prototype.intersectsPolygon = function (poly) {
+        var currentPoint = null,
+            nextPoint = null,
+            n = poly.points.length;
+
+        var currentLine = new modules.Space.Line(null, null),
+            iPoint = null;
+
+        var points = [];
+        for (var i = 0; i < n; ++i) {
+            currentPoint = poly.points[i];
+            nextPoint = poly.points[(i + 1) % n];
+
+            currentLine.start = currentPoint;
+            currentLine.end = nextPoint;
+
+            iPoint = this.intersectsLine(currentLine);
+            if (iPoint) {
+                points.push(iPoint);
+            }
+        }
+
+        return points;
     };
 
     this.Line.prototype.intersectsCircle = function (circle) {
@@ -323,6 +372,67 @@ AIScript.modules.Space = function (aiScript, modules) {
 
     this.Polygon.prototype.removePoint = function (point) {
         this.points.slice(this.points.indexOf(point), 1);
+    };
+
+    this.Polygon.prototype.isPointInside = function (point) {
+        var current = null, 
+            next = null, 
+            angle = 0;
+
+        var p1 = new modules.Space.Point(),
+            p2 = new modules.Space.Point();
+
+        var theta1 = 0,
+            theta2 = 0,
+            dtheta = 0;
+
+        var n = this.points.length;
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+            next = this.points[(i + 1) % n];
+
+            p1.x = current.x - point.x;
+            p1.y = current.y - point.y;
+
+            p2.x = next.x - point.x;
+            p2.y = next.y - point.y;
+
+            theta1 = Math.atan2(p1.y, p1.x);
+            theta2 = Math.atan2(p2.y, p2.x);
+            dtheta = theta2 - theta1;
+
+            while (dtheta > Math.PI) {
+                dtheta -= TwoPi;
+            }
+
+            while (dtheta < -Math.PI) {
+                dtheta += TwoPi;
+            }
+
+            angle += dtheta;
+        }
+
+        if (Math.abs(angle) < Math.PI) {
+            return false;
+        } else {
+            return true;
+        }
+    };
+
+    this.Polygon.prototype.area = function () {
+        var current = null,
+            next = null,
+            area = 0;
+
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+            next = this.points[(i + 1) % n];
+
+            area += current.x * next.y;
+            area -= current.y * next.x;
+        }
+
+        return area * 0.5;
     };
 
     this.Polygon.prototype.collidesWith = function (otherPoly) {

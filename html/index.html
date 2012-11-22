@@ -12,10 +12,25 @@
     <script type="text/javascript" src="../js/AIEntities.js"></script>
     <script type="text/javascript" src="../js/AISimulations.js"></script>
     <script type="text/javascript">
-        
+        var runLineSim = function () {
+            window.aiScript.simulate(new AIScript.modules.Simulations.LineTestSimulation());
+        };
+
+        var runPolySim = function () {
+            window.aiScript.simulate(new AIScript.modules.Simulations.PolygonSimulation());
+        };
     </script>
 </head>
 <body>
-    <canvas id="Main" width="800" height="450"></canvas>
+    <h3 id="Header">AIScript Unit Testing</h3>
+    <div>
+        <div id="Menu">
+            <ul>
+                <li onclick="runLineSim();">Run Line Simulation</li>
+                <li onclick="runPolySim();">Run Polygon Simulation</li>
+            </ul>
+        </div>
+        <canvas id="Main" width="800" height="450"></canvas>
+    </div>
 </body>
 </html>
