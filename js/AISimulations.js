@@ -125,6 +125,17 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.poly2.addPoint(new Point(180, 140));
         this.poly2.addPoint(new Point(140, 160));
 
+        this.poly3 = new Polygon();
+        this.poly3.addPoint(new Point(220, 320));
+        this.poly3.addPoint(new Point(240, 340));
+        this.poly3.addPoint(new Point(260, 340));
+        this.poly3.addPoint(new Point(240, 360));
+        this.poly3.addPoint(new Point(240, 400));
+        this.poly3.addPoint(new Point(220, 360));
+        this.poly3.addPoint(new Point(200, 400));
+        this.poly3.addPoint(new Point(200, 360));
+        this.poly3.addPoint(new Point(180, 340));
+        this.poly3.addPoint(new Point(200, 340));
     };
 
     this.PolygonSimulation.prototype.exit = function (next) {
@@ -136,9 +147,13 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.line.start.y = y;
         this.line.end.y = y;
 
+        this.poly1.rotateAroundCentroid(0.01);
+        this.poly3.rotateAroundCentroid(-0.04);
+
         this.iPoints = [];
         this.iPoints = this.line.intersectsPolygon(this.poly1);
         this.iPoints = Array.prototype.concat(this.iPoints, this.line.intersectsPolygon(this.poly2));
+        this.iPoints = Array.prototype.concat(this.iPoints, this.line.intersectsPolygon(this.poly3));
     };
 
     this.PolygonSimulation.prototype.draw = function (processing) {
@@ -146,6 +161,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         processing.stroke(255, 255, 255);
         this.drawPolygon(processing, this.poly1);
         this.drawPolygon(processing, this.poly2);
+        this.drawPolygon(processing, this.poly3);
 
         processing.strokeWeight(2);
         if (this.iPoints.length === 0) {
@@ -158,6 +174,17 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
             iPoint = this.line.end.closest(this.iPoints);
             processing.line(iPoint.x, iPoint.y, this.line.end.x, this.line.end.y);
+
+            
+            if (this.iPoints.length >= 2) {
+                var n = this.iPoints.length - 1;
+                for (var i = 1; i < n; ++i) {
+                    var c = this.iPoints[i];
+                    var n = this.iPoints[(i + 1) % n];
+
+                    processing.line(c.x, c.y, n.x, n.y);
+                }
+            }
         }
 
         processing.strokeWeight(1);
@@ -180,5 +207,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }
 
         processing.endShape(processing.CLOSE);
+
+        var centroid = polygon.centroid();
+        processing.ellipse(centroid.x, centroid.y, 3, 3);
     };
 };

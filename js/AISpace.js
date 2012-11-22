@@ -36,6 +36,9 @@ AIScript.modules.Space = function (aiScript, modules) {
         return xdist * xdist + ydist * ydist;
     };
 
+    this.Point.prototype.midpoint = function (other) {
+        return new modules.Space.Point((this.x + other.x) * 0.5, (this.y + other.y) * 0.5);
+    };
 
     this.Point.prototype.norm = function () {
         var magn = this.magn();
@@ -433,6 +436,51 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
 
         return area * 0.5;
+    };
+
+    this.Polygon.prototype.centroid = function () {
+        var cx = 0,
+            cy = 0;
+
+        var factor = 0,
+            area = 0,
+            n = this.points.length;
+
+        var current = null,
+            next = null;
+
+        var xy = 0,
+            yx = 0;
+
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+            next = this.points[(i + 1) % n];
+
+            factor = current.x * next.y - current.y * next.x;
+            cx += (current.x + next.x) * factor;
+            cy += (current.y + next.y) * factor;
+
+            area += current.x * next.y;
+            area -= current.y * next.x;
+        }
+
+        area = (area * 0.5) * 6.0;
+        factor = 1 / area;
+
+        cx *= factor;
+        cy *= factor;
+
+        return new modules.Space.Point(cx, cy);
+    };
+
+    this.Polygon.prototype.rotateAroundCentroid = function (theta) {
+        var centroid = this.centroid();
+
+        var current = null, n = this.points.length;
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+            current.rotateAround(centroid, theta);
+        }
     };
 
     this.Polygon.prototype.collidesWith = function (otherPoly) {
