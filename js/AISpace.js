@@ -532,11 +532,14 @@ AIScript.modules.Space = function (aiScript, modules) {
             current = this.points[i];
             current.rotateAround(around, theta);
         }
+
+        this._centroidDirty = true;
     };
 
     this.Polygon.prototype.rotateAroundCentroid = function (theta) {
         var centroid = this.centroid();
         this.rotateAround(centroid, theta);
+        this._centroidDirty = false; // rotated in place
     };
 
     this.Polygon.prototype.intersectsPolygon = function (otherPoly) {
