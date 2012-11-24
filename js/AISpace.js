@@ -392,9 +392,11 @@ AIScript.modules.Space = function (aiScript, modules) {
     this.Polygon = function Polygon(points) {
         this.points = [];
 
-        this.areaDirty = true;
+        this._areaDirty = true;
         this._area = 0;
 
+        this._centroid = null;
+        this._centroidDirty = true;
 
         if(points) {
             var n = points.length;
@@ -406,12 +408,14 @@ AIScript.modules.Space = function (aiScript, modules) {
 
     this.Polygon.prototype.addPoint = function (point) {
         this.points.push(point);
-        this.areaDirty = true;
+        this._areaDirty = true;
+        this._centroidDirty = true;
     };
 
     this.Polygon.prototype.removePoint = function (point) {
         this.points.slice(this.points.indexOf(point), 1);
-        this.areaDirty = true;
+        this._areaDirty = true;
+        this._centroidDirty = true;
     };
 
     this.Polygon.prototype.isPointInside = function (point) {
@@ -460,7 +464,7 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     this.Polygon.prototype.area = function () {
-        if (!this.areaDirty) return this._area;
+        if (!this._areaDirty) return this._area;
 
         var n = this.points.length;
 
@@ -477,12 +481,14 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
 
         this._area = area * 0.5;
-        this.areaDirty = false;
+        this._areaDirty = false;
 
         return this._area;
     };
 
     this.Polygon.prototype.centroid = function () {
+        if (!this._centroidDirty) return this._centroid;
+
         var cx = 0,
             cy = 0;
 
@@ -514,7 +520,10 @@ AIScript.modules.Space = function (aiScript, modules) {
         cx *= factor;
         cy *= factor;
 
-        return new modules.Space.Point(cx, cy);
+        this._centroid = new modules.Space.Point(cx, cy);
+        this._centroidDirty = false;
+
+        return this._centroid;
     };
 
     this.Polygon.prototype.rotateAroundCentroid = function (theta) {
@@ -585,10 +594,6 @@ AIScript.modules.Space = function (aiScript, modules) {
             } else if (current.y > max) {
                 max = current.y;
             }
-        }
-
-        if (min === Number.MAX_VALUE || max === Number.MIN_VALUE) {
-            console.log('here');
         }
 
         return (max - min) * scale;
