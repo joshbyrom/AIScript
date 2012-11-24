@@ -148,10 +148,14 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.poly5 = new Polygon();
         this.poly5.addPoint(new Point(445, 250));
         this.poly5.addPoint(new Point(465, 250));
+        this.poly5.area();
         this.poly5.addPoint(new Point(465, 270));
+        this.poly5.area();
         this.poly5.addPoint(new Point(485, 270));
         this.poly5.addPoint(new Point(485, 290));
         this.poly5.addPoint(new Point(445, 290));
+        this.poly5.area();
+        this.poly5.area();
     };
 
     this.PolygonSimulation.prototype.exit = function (next) {

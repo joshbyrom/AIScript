@@ -392,6 +392,10 @@ AIScript.modules.Space = function (aiScript, modules) {
     this.Polygon = function Polygon(points) {
         this.points = [];
 
+        this.areaDirty = true;
+        this._area = 0;
+
+
         if(points) {
             var n = points.length;
             for(var i = 0; i < n; ++i) {
@@ -402,10 +406,12 @@ AIScript.modules.Space = function (aiScript, modules) {
 
     this.Polygon.prototype.addPoint = function (point) {
         this.points.push(point);
+        this.areaDirty = true;
     };
 
     this.Polygon.prototype.removePoint = function (point) {
         this.points.slice(this.points.indexOf(point), 1);
+        this.areaDirty = true;
     };
 
     this.Polygon.prototype.isPointInside = function (point) {
@@ -454,6 +460,10 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     this.Polygon.prototype.area = function () {
+        if (!this.areaDirty) return this._area;
+
+        var n = this.points.length;
+
         var current = null,
             next = null,
             area = 0;
@@ -466,7 +476,10 @@ AIScript.modules.Space = function (aiScript, modules) {
             area -= current.y * next.x;
         }
 
-        return area * 0.5;
+        this._area = area * 0.5;
+        this.areaDirty = false;
+
+        return this._area;
     };
 
     this.Polygon.prototype.centroid = function () {
