@@ -6,10 +6,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.position = new Point(x, y);
         this.velocity = new Point();
         this.acceleration = new Point();
+        this.heading = new Point();
 
         this.maxForce = 40;
         this.maxSpeed = 12;
-        this.friction = 1;
+        this.friction = 0.1;
+
+        this.speed = 0;
 
         this.polygon = polygon || new Polygon();
         this.scale = 1.0;
@@ -37,8 +40,23 @@ AIScript.modules.Entities = function (aiScript, modules) {
         return this.polygon.area();
     };
 
+    // prepare the entity to be moved by its forces
     this.Entity.calculateVelocity = function () {
+        velocity.x += acceleration.x - (friction * velocity.x);
+        velocity.y += acceleration.y - (friction * velocity.y);
 
+        this.speed = velocity.magnitude();
+        if (this.speed > this.maxSpeed) {
+            velocity.x = (velocity.x / this.speed) * this.maxSpeed;
+            velocity.y = (velocity.y / this.speed) * this.maxSpeed;
+            this.speed = this.maxSpeed;
+        } else if (this.speed < 0.001) {
+            velocity.zero();
+            acceleration.zero();
+        }
+
+        heading.x = velocity.x / this.speed;
+        heading.y = velocity.y / this.speed;
     };
 
     this.Entity.prototype.update = function () {
