@@ -1,9 +1,7 @@
-var count = 0;
-
 AIScript.modules.Entities = function (aiScript, modules) {
     var Point = modules.Space.Point;
 
-    this.Entity = function Entity(x, y, width, height) {
+    this.Entity = function Entity(x, y, polygon) {
         this.position = new Point(x, y);
         this.velocity = new Point();
         this.acceleration = new Point();
@@ -11,8 +9,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.maxForce = 40;
         this.maxSpeed = 12;
 
-        this.width = width;
-        this.height = height;
+        this.polygon = polygon || null;
+        this.scale = 1.0;
 
         this.behaviors = [];
     };
@@ -32,4 +30,10 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         return this.maxForce - this.force; // return how much force we have left
     };
+
+    this.Manager = function () {
+        this.entities = [];
+    };
+
+
 };

@@ -364,6 +364,30 @@ AIScript.modules.Space = function (aiScript, modules) {
         return line.intersectsCircle(this);
     };
 
+    // rect class
+    this.Rectangle = function Rectangle(left, right, top, bottom) {
+        this.left = left;
+        this.right = right;
+        this.top = top;
+        this.bottom = bottom;
+
+        this.width = right - left;
+        this.height = bottom - top; // processing.js has inverted Y
+    };
+
+    this.Rectangle.prototype.isPointInside = function (x, y) {
+        return x >= this.left && x <= this.right &&
+               y >= this.top && y <= this.bottom;
+    };
+
+    // right now this returns true only if all four corners are inside the rect
+    this.Rectangle.prototype.isRectInside = function (rect) {
+        return this.isPointInside(rect.left, rect.top) &&
+               this.isPointInside(rect.right, rect.bottom) &&
+               this.isPointInside(rect.right, rect.top) &&
+               this.isPointInside(rect.left, rect.bottom);
+    };
+
     // poly class
     this.Polygon = function Polygon(points) {
         this.points = [];
@@ -510,5 +534,83 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
 
         return result;
+    };
+
+    this.Polygon.prototype.boundingWidth = function (scale) {
+        var n = this.points.length;
+
+        if(n === 0) return 0;
+
+        var current = null,
+            min = Number.MAX_VALUE,
+            max = Number.MIN_VALUE;
+
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+
+            if (current.x < min) min = current.x;
+            else if (current.x > max) max = current.x;
+        }
+
+        return (max - min) * scale;
+    };
+
+    this.Polygon.prototype.boundingHeight = function (scale) {
+        var n = this.points.length;
+
+        if (n === 0) return 0;
+
+        var current = null,
+            min = Number.MAX_VALUE,
+            max = Number.MIN_VALUE;
+
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+
+            if (current.y < min) {
+                min = current.y;
+            } else if (current.y > max) {
+                max = current.y;
+            }
+        }
+
+        if (min === Number.MAX_VALUE || max === Number.MIN_VALUE) {
+            console.log('here');
+        }
+
+        return (max - min) * scale;
+    };
+
+    this.Polygon.prototype.boundingRect = function (padding) {
+        var n = this.points.length;
+
+        var first = n > 0 ? this.points[0] : false;
+        var current = null,
+            minX = first ? first.x : 0,
+            maxX = first ? first.x : 0,
+            minY = first ? first.y : 0,
+            maxY = first ? first.y : 0;
+
+        for (var i = 1; i < n; ++i) {
+            current = this.points[i];
+
+            if (current.x < minX) {
+                minX = current.x;
+            } else if (current.x > maxX) {
+                maxX = current.x;
+            }
+
+            if (current.y < minY) {
+                minY = current.y;
+            } else if (current.y > maxY) {
+                maxY = current.y;
+            }
+
+        }
+
+        return new modules.Space.Rectangle(minX - (padding || 0),
+                                           maxX + (padding || 0),
+                                           minY - (padding || 0),
+                                           maxY + (padding || 0));
     };
 };

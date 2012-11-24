@@ -175,11 +175,9 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.PolygonSimulation.prototype.draw = function (processing) {
-        processing.fill(123, 145, 213);
-        processing.stroke(255, 255, 255);
-        this.drawPolygon(processing, this.poly1);
+        this.drawPolygon(processing, this.poly1, true);
         this.drawPolygon(processing, this.poly2);
-        this.drawPolygon(processing, this.poly3);
+        this.drawPolygon(processing, this.poly3, true);
         this.drawPolygon(processing, this.poly4);
         this.drawPolygon(processing, this.poly5);
 
@@ -222,10 +220,12 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }
     };
 
-    this.PolygonSimulation.prototype.drawPolygon = function (processing, polygon) {
+    this.PolygonSimulation.prototype.drawPolygon = function (processing, polygon, drawBoundingRect) {
         var n = polygon.points.length,
             current = null;
 
+        processing.fill(123, 145, 213);
+        processing.stroke(255, 255, 255);
         processing.beginShape();
         for (var i = 0; i < n; ++i) {
             current = polygon.points[i];
@@ -235,6 +235,13 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         processing.endShape(processing.CLOSE);
 
         var centroid = polygon.centroid();
+        var rect = polygon.boundingRect();
+
         processing.ellipse(centroid.x, centroid.y, 3, 3);
+        
+        if (drawBoundingRect) {
+            processing.fill(0, 0, 0, 0);
+            processing.rect(rect.left, rect.top, rect.width, rect.height);
+        }
     };
 };
