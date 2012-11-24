@@ -365,8 +365,15 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     // poly class
-    this.Polygon = function Polygon() {
+    this.Polygon = function Polygon(points) {
         this.points = [];
+
+        if(points) {
+            var n = points.length;
+            for(var i = 0; i < n; ++i) {
+                this.points.push(new modules.Space.Point(points[i].x, points[i].y));
+            }
+        };
     };
 
     this.Polygon.prototype.addPoint = function (point) {
@@ -483,7 +490,25 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
     };
 
-    this.Polygon.prototype.collidesWith = function (otherPoly) {
+    this.Polygon.prototype.intersectsPolygon = function (otherPoly) {
+        var current = null,
+            next = null;
 
+        var n = this.points.length;
+
+        var result = [];
+        var line = new modules.Space.Line();
+
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+            next = this.points[(i + 1) % n];
+
+            line.start = current;
+            line.end = next;
+
+            result = Array.prototype.concat(result, line.intersectsPolygon(otherPoly));
+        }
+
+        return result;
     };
 };

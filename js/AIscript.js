@@ -151,7 +151,7 @@ function addEvent(target, event, fnc) {
         target.attachEvent(onEvent, fnc);
     }
     else {
-        if (target.onEvent != null) {
+        if (target.onEvent !== null) {
             var oldOnload = target.onEvent;
             target.onEvent = function (e) {
                 oldOnload(e);

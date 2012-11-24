@@ -136,6 +136,22 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.poly3.addPoint(new Point(200, 360));
         this.poly3.addPoint(new Point(180, 340));
         this.poly3.addPoint(new Point(200, 340));
+
+        this.poly4 = new Polygon();
+        this.poly4.addPoint(new Point(420, 220));
+        this.poly4.addPoint(new Point(440, 220));
+        this.poly4.addPoint(new Point(440, 240));
+        this.poly4.addPoint(new Point(460, 240));
+        this.poly4.addPoint(new Point(460, 260));
+        this.poly4.addPoint(new Point(420, 260));
+
+        this.poly5 = new Polygon();
+        this.poly5.addPoint(new Point(445, 250));
+        this.poly5.addPoint(new Point(465, 250));
+        this.poly5.addPoint(new Point(465, 270));
+        this.poly5.addPoint(new Point(485, 270));
+        this.poly5.addPoint(new Point(485, 290));
+        this.poly5.addPoint(new Point(445, 290));
     };
 
     this.PolygonSimulation.prototype.exit = function (next) {
@@ -154,6 +170,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.iPoints = this.line.intersectsPolygon(this.poly1);
         this.iPoints = Array.prototype.concat(this.iPoints, this.line.intersectsPolygon(this.poly2));
         this.iPoints = Array.prototype.concat(this.iPoints, this.line.intersectsPolygon(this.poly3));
+
+        this.iPoints2 = this.poly4.intersectsPolygon(this.poly5);
     };
 
     this.PolygonSimulation.prototype.draw = function (processing) {
@@ -162,6 +180,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.drawPolygon(processing, this.poly1);
         this.drawPolygon(processing, this.poly2);
         this.drawPolygon(processing, this.poly3);
+        this.drawPolygon(processing, this.poly4);
+        this.drawPolygon(processing, this.poly5);
 
         processing.strokeWeight(2);
         if (this.iPoints.length === 0) {
@@ -192,6 +212,12 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         for (var i = 0; i < this.iPoints.length; ++i) {
             processing.ellipse(this.iPoints[i].x,
                                this.iPoints[i].y,
+                               6, 6);
+        }
+
+        for (var i = 0; i < this.iPoints2.length; ++i) {
+            processing.ellipse(this.iPoints2[i].x,
+                               this.iPoints2[i].y,
                                6, 6);
         }
     };
