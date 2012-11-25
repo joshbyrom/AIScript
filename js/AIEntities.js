@@ -82,5 +82,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.entities = [];
     };
 
+    this.Group.prototype.addEntity = function (entity) {
+        this.entities.push(entity);
+        entity.handleAddedToGroup(this);
+    };
 
+    this.Group.prototype.removeEntity = function (entity) {
+        this.entities.slice(this.entities.indexOf(entity), 1);
+        entity.handleRemovedFromGroup(this);
+    };
 };
