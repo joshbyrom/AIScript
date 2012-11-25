@@ -180,7 +180,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
     this.PolygonSimulation.prototype.draw = function (processing) {
         this.drawPolygon(processing, this.poly1, true);
-        this.drawPolygon(processing, this.poly2);
+        this.drawPolygon(processing, this.poly2, true);
         this.drawPolygon(processing, this.poly3, true);
         this.drawPolygon(processing, this.poly4);
         this.drawPolygon(processing, this.poly5);

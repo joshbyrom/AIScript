@@ -91,4 +91,12 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.entities.slice(this.entities.indexOf(entity), 1);
         entity.handleRemovedFromGroup(this);
     };
+
+    this.Group.prototype.update = function () {
+        for (var entity in this.entities) {
+            if (entity.hasOwnProperty('update')) {
+                entity.update();
+            }
+        }
+    };
 };
