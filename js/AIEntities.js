@@ -18,6 +18,21 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.scale = 1.0;
 
         this.behaviors = [];
+        this.group = null;
+    };
+
+    this.Entity.prototype.handleAddedToGroup = function (group) {
+        if (this.group) {
+            this.handleRemovedFromGroup(this.group);
+        }
+
+        this.group = group;
+    };
+
+    this.Entity.prototype.handleRemovedFromGroup = function (group) {
+        if (group !== this.group) return;
+
+        this.group = null;
     };
 
     this.Entity.prototype.applyForce = function (x, y) {
