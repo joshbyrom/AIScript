@@ -269,6 +269,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         
         var e = new Entity(10, 30, poly);
         e.scale = 5;
+        e.applyForce(10, 10);
 
         this.group.addEntity(e);
     };
@@ -278,7 +279,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.EntitySimulation.prototype.update = function () {
-
+        this.group.update();
     };
 
     this.EntitySimulation.prototype.draw = function (processing) {
@@ -300,7 +301,18 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
     this.EntitySimulation.prototype.drawEntity = function (processing, entity) {
         var pos = entity.position;
-        
+
+        var side = entity.zeroAngleSide(12);
+        side.rotateAround(pos, entity.rotation);
+
+        processing.fill(255, 0, 0);
+        processing.triangle(pos.x, pos.y + entity.scale, side.x, side.y, pos.x, pos.y - entity.scale);
+
+        var forward = entity.forward(12).add(pos);
+
+        processing.fill(0, 255, 0);
+        processing.triangle(pos.x, pos.y + entity.scale, forward.x, forward.y, pos.x, pos.y - entity.scale);
+
         var points = entity.polygon.points;
         var point = null,
             n = points.length;
@@ -314,5 +326,6 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }
 
         processing.endShape(processing.CLOSE);
+
     };
 };

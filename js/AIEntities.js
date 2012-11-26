@@ -37,13 +37,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Entity.prototype.applyForce = function (x, y) {
-        this.ax += x;
-        this.ay += y;
+        this.acceleration.x += x;
+        this.acceleration.y += y;
 
-        var magnitude = Math.sqrt(this.ax * this.ax + this.ay * this.ay);
+        var magnitude = this.acceleration.magn();
         if (this.magnitude > this.maxForce) {
-            this.ax = (this.ax / magnitude) * this.maxForce;
-            this.ay = (this.ay / magnitude) * this.maxForce;
+            this.acceleration.x = (this.acceleration.x / magnitude) * this.maxForce;
+            this.acceleration.y = (this.acceleration.y / magnitude) * this.maxForce;
             this.force = this.maxForce;
         } else {
             this.force = magnitude;
@@ -52,51 +52,76 @@ AIScript.modules.Entities = function (aiScript, modules) {
         return this.maxForce - this.force; // return how much force we have left
     };
 
+    this.Entity.prototype.zeroAngleSide = function (scale) {
+        var result = new modules.Space.Point(scale || 10, 0);
+        return result.add(this.position);
+    };
+
+    this.Entity.prototype.forward = function (scale) {
+        if (this.speed === 0) {
+            return new modules.Space.Point(scale || 10, 0).rotate(this.rotation);
+        }
+
+        var result = new modules.Space.Point(this.heading.x, this.heading.y);
+        return result.mul(scale || 1);
+    };
+
     this.Entity.prototype.mass = function () {
         return this.polygon.area();
     };
 
     // prepare the entity to be moved by its forces
-    this.Entity.calculateVelocity = function () {
-        velocity.x += acceleration.x - (friction * velocity.x);
-        velocity.y += acceleration.y - (friction * velocity.y);
+    this.Entity.prototype.calculateVelocity = function () {
+        this.velocity.x += this.acceleration.x - (this.friction * this.velocity.x);
+        this.velocity.y += this.acceleration.y - (this.friction * this.velocity.y);
 
-        this.speed = velocity.magnitude();
+        this.speed = this.velocity.magn();
         if (this.speed > this.maxSpeed) {
-            velocity.x = (velocity.x / this.speed) * this.maxSpeed;
-            velocity.y = (velocity.y / this.speed) * this.maxSpeed;
+            this.velocity.x = (this.velocity.x / this.speed) * this.maxSpeed;
+            this.velocity.y = (this.velocity.y / this.speed) * this.maxSpeed;
             this.speed = this.maxSpeed;
         } else if (this.speed < 0.001) {
-            velocity.zero();
-            acceleration.zero();
+            this.velocity.zero();
+            this.acceleration.zero();
         }
 
-        heading.x = velocity.x / this.speed;
-        heading.y = velocity.y / this.speed;
+        this.heading.x = this.velocity.x / this.speed;
+        this.heading.y = this.velocity.y / this.speed;
     };
 
-    this.Entity.prototype.update = function () {
-        var forceLeft = 0, rotation = this.rotation;
-        for (var behavior in this.behaviors) {
-            if (behavior.hasOwnProperty('update')) {
+    this.Entity.prototype.calculateForces = function () {
+        var forceLeft = 0,
+            _rotation = this.rotation,
+            n = this.behaviors.length,
+            behavior = null;
+
+        for (var i = 0; i < n; ++i) {
+            behavior = this.behaviors[i];
+
+            if ('update' in behavior) {
                 behavior.update();
             }
 
-            if (behavior.hasOwnProperty('linear')) {
+            if ('linear' in behavior) {
                 var linear = behavior.linear();
                 forceLeft = this.applyForce(linear.x, linear.y);
             }
 
-            if (behavior.hasOwnProperty('rotation')) {
-                rotation += behavior.rotation();
+            if ('rotation' in behavior) {
+                _rotation += behavior.rotation();
             }
         }
 
-        if (rotation !== this.rotation) {
-            this.polygon.rotateAroundCentroid(this.rotation - rotation);
-            this.rotation = rotation;
+        if (_rotation !== this.rotation) {
+            this.polygon.rotateAroundCentroid(this.rotation - _rotation);
+            this.rotation = _rotation;
         }
+    };
 
+    this.Entity.prototype.update = function () {
+        this.calculateForces();
+
+        this.calculateVelocity();
         this.position.add(this.velocity);
         this.acceleration.zero();
     };
