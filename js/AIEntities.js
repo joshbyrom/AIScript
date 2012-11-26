@@ -16,7 +16,10 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.polygon = polygon || new Polygon();
         this.scale = 1.0;
-        this.rotation = 0.0;
+
+        this.rotation = new Point(1, 0);
+        this.rotationTarget = new Point(1, 0);
+        this.maxTurnRate = 0.2;
 
         this.behaviors = [];
         this.group = null;
@@ -58,12 +61,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Entity.prototype.forward = function (scale) {
-        if (this.speed === 0) {
-            return new modules.Space.Point(scale || 10, 0).rotate(this.rotation);
-        }
-
         var result = new modules.Space.Point(this.heading.x, this.heading.y);
-        return result.mul(scale || 1);
+        return result.mul(scale || 10);
     };
 
     this.Entity.prototype.mass = function () {
@@ -89,9 +88,12 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.heading.y = this.velocity.y / this.speed;
     };
 
+    this.Entity.prototype.facePoint = function (point) {
+        this.rotationTarget = point;
+    };
+
     this.Entity.prototype.calculateForces = function () {
         var forceLeft = 0,
-            _rotation = this.rotation,
             n = this.behaviors.length,
             behavior = null;
 
@@ -108,21 +110,21 @@ AIScript.modules.Entities = function (aiScript, modules) {
             }
 
             if ('rotation' in behavior) {
-                _rotation += behavior.rotation();
+
             }
         }
+    };
 
-        if (_rotation !== this.rotation) {
-            this.polygon.rotateAroundCentroid(this.rotation - _rotation);
-            this.rotation = _rotation;
-        }
+    this.Entity.prototype.calculateRotation = function () {
+
     };
 
     this.Entity.prototype.update = function () {
         this.calculateForces();
-
+        this.calculateRotation();
         this.calculateVelocity();
         this.position.add(this.velocity);
+
         this.acceleration.zero();
     };
 

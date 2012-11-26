@@ -6,6 +6,10 @@ AIScript.modules.Space = function (aiScript, modules) {
         this.y = y || 0;
     };
 
+    this.Point.prototype.clone = function () {
+        return new modules.Space.Point(this.x, this.y);
+    };
+
     this.Point.prototype.add = function (xy) {
         this.x += xy.x;
         this.y += xy.y;

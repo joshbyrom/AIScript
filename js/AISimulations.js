@@ -267,11 +267,11 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         poly.addPoint(-1, -1);
         poly.addPoint(-1, 1);
         
-        var e = new Entity(10, 30, poly);
-        e.scale = 5;
-        e.applyForce(10, 10);
+        this.e = new Entity(10, 30, poly);
+        this.e.scale = 5;
+        this.e.applyForce(10, 10);
 
-        this.group.addEntity(e);
+        this.group.addEntity(this.e);
     };
 
     this.EntitySimulation.prototype.exit = function (next) {
@@ -287,7 +287,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.EntitySimulation.prototype.handleMouseMoved = function (x, y) {
-        
+        this.e.facePoint(new Point(x, y));
     };
 
     this.EntitySimulation.prototype.drawGroup = function (processing, group) {
@@ -302,11 +302,11 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     this.EntitySimulation.prototype.drawEntity = function (processing, entity) {
         var pos = entity.position;
 
-        var side = entity.zeroAngleSide(12);
-        side.rotateAround(pos, entity.rotation);
+        var rot = entity.rotation.clone();
+        rot.mul(12).add(pos);
 
         processing.fill(255, 0, 0);
-        processing.triangle(pos.x, pos.y + entity.scale, side.x, side.y, pos.x, pos.y - entity.scale);
+        processing.triangle(pos.x, pos.y + entity.scale, rot.x, rot.y, pos.x, pos.y - entity.scale);
 
         var forward = entity.forward(12).add(pos);
 
