@@ -248,4 +248,19 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             processing.rect(rect.left, rect.top, rect.width, rect.height);
         }
     };
+
+    // entity unit test
+    this.EntitySimulation = function () {
+
+    };
+
+    this.EntitySimulation.prototype.enter = function (last) {
+
+    };
+
+    this.EntitySimulation.prototype.exit = function (next) {
+
+    };
+
+    this.EntitySimulation.prototype.update = function
 };

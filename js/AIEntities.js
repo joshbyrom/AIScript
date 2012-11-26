@@ -16,6 +16,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.polygon = polygon || new Polygon();
         this.scale = 1.0;
+        this.rotation = 0.0;
 
         this.behaviors = [];
         this.group = null;
@@ -51,7 +52,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
         return this.maxForce - this.force; // return how much force we have left
     };
 
-    this.Entity.mass = function () {
+    this.Entity.prototype.mass = function () {
         return this.polygon.area();
     };
 
@@ -75,7 +76,29 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Entity.prototype.update = function () {
+        var forceLeft = 0, rotation = this.rotation;
+        for (var behavior in this.behaviors) {
+            if (behavior.hasOwnProperty('update')) {
+                behavior.update();
+            }
 
+            if (behavior.hasOwnProperty('linear')) {
+                var linear = behavior.linear();
+                forceLeft = this.applyForce(linear.x, linear.y);
+            }
+
+            if (behavior.hasOwnProperty('rotation')) {
+                rotation += behavior.rotation();
+            }
+        }
+
+        if (rotation !== this.rotation) {
+            this.polygon.rotateAroundCentroid(this.rotation - rotation);
+            this.rotation = rotation;
+        }
+
+        this.position.add(this.velocity);
+        this.acceleration.zero();
     };
 
     this.Group = function () {

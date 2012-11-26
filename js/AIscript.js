@@ -105,15 +105,35 @@
         processing.draw = this.draw(processing);
         processing.keyPressed = this.handleKeyPressed(processing);
         processing.keyReleased = this.handleKeyReleased(processing);
+        processing.mousePressed = this.handleMousePressed(processing);
+        processing.mouseMoved = this.handleMouseMoved(processing);
+    };
+
+    AIScript.prototype.handleMouseMoved = function (processing) {
+        return (function () {
+            return function () {
+                if (this.simulation && this.simulation.hasOwnProperty('handleMouseMoved')) {
+                    this.simulation.handleMouseMoved(processing.mouseButton);
+                }
+            }.bind(this);
+        }).bind(this);
+    };
+
+    AIScript.prototype.handleMousePressed = function (processing) {
+        return (function () {
+            return function () {
+                if (this.simulation && this.simulation.hasOwnProperty('handleMousePressed')) {
+                    this.simulation.handleMousePressed(processing.mouseButton);
+                }
+            }.bind(this);
+        }).bind(this);
     };
 
     AIScript.prototype.handleKeyPressed = function (processing) {
         return (function () {
             return function () {
-                if (this.simulation) {
-                    if (this.simulation.handleKeyPressed) {
-                        this.simulation.handleKeyPressed(processing.keyCode);
-                    }
+                if (this.simulation && this.simulation.hasOwnProperty('handleKeyPressed')) {
+                    this.simulation.handleKeyPressed(processing.keyCode);
                 }
             }.bind(this);
         }).call(this);
@@ -122,10 +142,8 @@
     AIScript.prototype.handleKeyReleased = function (processing) {
         return (function () {
             return function () {
-                if (this.simulation) {
-                    if (this.simulation.handleKeyReleased) {
-                        this.simulation.handleKeyReleased(processing.keyCode);
-                    }
+                if (this.simulation && this.simulation.hasOwnProperty('handleKeyReleased')) {
+                    this.simulation.handleKeyReleased(processing.keyCode);
                 }
             }.bind(this);
         }).call(this);
