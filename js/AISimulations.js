@@ -3,6 +3,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Point = modules.Space.Point;
     var Circle = modules.Space.Circle;
     var Polygon = modules.Space.Polygon;
+    var Entity = modules.Entities.Entity;
+    var Group = modules.Entities.Group;
 
     this.LineTestSimulation = function () {
 
@@ -156,6 +158,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.poly5.addPoint(new Point(445, 290));
         this.poly5.area();
         this.poly5.area();
+
+        this.iPoints2 = [];
     };
 
     this.PolygonSimulation.prototype.exit = function (next) {
@@ -255,12 +259,60 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.EntitySimulation.prototype.enter = function (last) {
+        this.group = new Group();
+        
+        var poly = new Polygon();
+        poly.addPoint(1, 1);
+        poly.addPoint(1, -1);
+        poly.addPoint(-1, -1);
+        poly.addPoint(-1, 1);
+        
+        var e = new Entity(10, 30, poly);
+        e.scale = 5;
 
+        this.group.addEntity(e);
     };
 
     this.EntitySimulation.prototype.exit = function (next) {
 
     };
 
-    this.EntitySimulation.prototype.update = function
+    this.EntitySimulation.prototype.update = function () {
+
+    };
+
+    this.EntitySimulation.prototype.draw = function (processing) {
+        this.drawGroup(processing, this.group);
+    };
+
+    this.EntitySimulation.prototype.handleMouseMoved = function (x, y) {
+        
+    };
+
+    this.EntitySimulation.prototype.drawGroup = function (processing, group) {
+        var ents = group.entities,
+            n = ents.length;
+        
+        for (var i = 0; i < n; ++i) {
+            this.drawEntity(processing, ents[i]);
+        }
+    };
+
+    this.EntitySimulation.prototype.drawEntity = function (processing, entity) {
+        var pos = entity.position;
+        
+        var points = entity.polygon.points;
+        var point = null,
+            n = points.length;
+
+        processing.fill(123, 145, 213);
+        processing.stroke(255, 255, 255);
+        processing.beginShape();
+        for (var i = 0; i < n; ++i) {
+            point = points[i];
+            processing.vertex(pos.x + (point.x * entity.scale), pos.y + (point.y * entity.scale));
+        }
+
+        processing.endShape(processing.CLOSE);
+    };
 };

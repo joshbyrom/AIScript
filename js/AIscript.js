@@ -49,6 +49,11 @@
         this.simulation = simulation;
 
         this.simulation.enter(this.last);
+        if (this.paused && !('handleKeyPressed' in this.simulation &&
+                             'handleMousePressed' in this.simulation)) {
+            // no input to unpause with
+            this.paused = false;
+        }
         return this;    
     };
 
@@ -112,27 +117,27 @@
     AIScript.prototype.handleMouseMoved = function (processing) {
         return (function () {
             return function () {
-                if (this.simulation && this.simulation.hasOwnProperty('handleMouseMoved')) {
-                    this.simulation.handleMouseMoved(processing.mouseButton);
+                if (this.simulation && 'handleMouseMoved' in this.simulation) {
+                    this.simulation.handleMouseMoved(processing.mouseX, processing.mouseY);
                 }
             }.bind(this);
-        }).bind(this);
+        }).call(this);
     };
 
     AIScript.prototype.handleMousePressed = function (processing) {
         return (function () {
             return function () {
-                if (this.simulation && this.simulation.hasOwnProperty('handleMousePressed')) {
+                if (this.simulation && 'handleMousePressed' in this.simulation) {
                     this.simulation.handleMousePressed(processing.mouseButton);
                 }
             }.bind(this);
-        }).bind(this);
+        }).call(this);
     };
 
     AIScript.prototype.handleKeyPressed = function (processing) {
         return (function () {
             return function () {
-                if (this.simulation && this.simulation.hasOwnProperty('handleKeyPressed')) {
+                if (this.simulation && 'handleKeyPressed' in this.simulation) {
                     this.simulation.handleKeyPressed(processing.keyCode);
                 }
             }.bind(this);
@@ -142,7 +147,7 @@
     AIScript.prototype.handleKeyReleased = function (processing) {
         return (function () {
             return function () {
-                if (this.simulation && this.simulation.hasOwnProperty('handleKeyReleased')) {
+                if (this.simulation && 'handleKeyReleased' in this.simulation) {
                     this.simulation.handleKeyReleased(processing.keyCode);
                 }
             }.bind(this);

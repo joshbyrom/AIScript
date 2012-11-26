@@ -407,6 +407,10 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     this.Polygon.prototype.addPoint = function (point) {
+        if (arguments.length === 2) {
+            point = new modules.Space.Point(arguments[0], arguments[1]);
+        }
+
         this.points.push(point);
         this._areaDirty = true;
         this._centroidDirty = true;

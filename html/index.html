@@ -19,6 +19,10 @@
         var runPolySim = function () {
             window.aiScript.simulate(new AIScript.modules.Simulations.PolygonSimulation());
         };
+
+        var runEntSim = function () {
+            window.aiScript.simulate(new AIScript.modules.Simulations.EntitySimulation());
+        };
     </script>
 </head>
 <body>
@@ -28,6 +32,7 @@
             <ul>
                 <li onclick="runLineSim();">Run Line Simulation</li>
                 <li onclick="runPolySim();">Run Polygon Simulation</li>
+                <li onclick="runEntSim();">Run Entity Simulation</li>
             </ul>
         </div>
         <canvas id="Main" width="800" height="450"></canvas>

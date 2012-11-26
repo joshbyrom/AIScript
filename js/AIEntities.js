@@ -116,8 +116,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Group.prototype.update = function () {
-        for (var entity in this.entities) {
-            if (entity.hasOwnProperty('update')) {
+        var entity = null,
+            n = this.entities.length;
+
+        for (var i = 0; i < n; ++i) {
+            entity = this.entities[i];
+
+            if ('update' in entity) {
                 entity.update();
             }
         }
