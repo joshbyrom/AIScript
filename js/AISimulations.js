@@ -305,8 +305,9 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         var rot = entity.rotation.clone();
         rot.mul(12).add(pos);
 
-        processing.fill(255, 0, 0);
-        processing.triangle(pos.x, pos.y + entity.scale, rot.x, rot.y, pos.x, pos.y - entity.scale);
+        processing.stroke(255, 0, 0);
+        processing.line(pos.x, pos.y, rot.x, rot.y);
+        processing.stroke(255, 255, 255);
 
         var forward = entity.forward(12).add(pos);
 

@@ -88,7 +88,7 @@ AIScript.modules.Space = function (aiScript, modules) {
             x2 = other.x - p2.x,
             y2 = other.y - p2.y;
 
-        if (x1 * y2 - y1 * x2 >= 0) {
+        if ((x1 * y2 - y1 * x2) >= 0) {
             return 1;
         } else {
             return -1;
@@ -102,7 +102,7 @@ AIScript.modules.Space = function (aiScript, modules) {
         var sin = Math.sin(_theta);
 
         this.x = this.x * cos - sin * this.y;
-        this.y = this.y * sin + cos * this.y;
+        this.y = this.x * sin + cos * this.y;
         return this;
     };
 
@@ -132,7 +132,7 @@ AIScript.modules.Space = function (aiScript, modules) {
         var sin = Math.sin(_theta);
 
         ret.x = this.x * cos - sin * this.y;
-        ret.y = this.y * sin + cos * this.y;
+        ret.y = this.x * sin + cos * this.y;
         return ret;
     };
 

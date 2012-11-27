@@ -17,8 +17,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.polygon = polygon || new Polygon();
         this.scale = 1.0;
 
-        this.rotation = new Point(1, 0);
-        this.rotationTarget = new Point(1, 0);
+        this.rotation = new Point(1.0, 0.0);
+        this.rotationTarget = new Point(1.0, 0.0);
         this.maxTurnRate = 0.2;
 
         this.behaviors = [];
@@ -116,25 +116,23 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Entity.prototype.calculateRotation = function () {
-        var toTarget = this.rotationTarget.clone().sub(this.position);
+        var toTarget = this.rotationTarget.clone().sub(this.position).norm();
         var dot = this.rotation.dot(toTarget);
 
         if (dot > 1) {
             dot = 1;
-        } else if (dot < 1) {
+        } else if (dot < -1) {
             dot = -1;
         }
 
         var angle = Math.acos(dot);
-        console.log(dot, angle);
         if (angle < 0.0001) {
-            angle = 0.0;
-            // return ?
+            return;
         } else if (angle > this.maxTurnRate) {
             angle = this.maxTurnRate;
         }
 
-        this.rotation.rotate(angle * this.rotation.sign(toTarget));
+        this.rotation.rotate(angle * this.rotation.sign(toTarget)).norm();
     };
 
     this.Entity.prototype.update = function () {
