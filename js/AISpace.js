@@ -51,6 +51,10 @@ AIScript.modules.Space = function (aiScript, modules) {
         return this;
     };
 
+    this.Point.prototype.dot = function (other) {
+        return this.x * other.x + this.y * other.y;
+    };
+
     this.Point.prototype.magn = function () {
         return Math.sqrt(this.x * this.x + this.y * this.y);
     };
@@ -64,6 +68,12 @@ AIScript.modules.Space = function (aiScript, modules) {
         return this;
     };
 
+    this.Point.prototype.negate = function () {
+        this.x = -this.x;
+        this.y = -this.y;
+        return this;
+    };
+
     this.Point.prototype.angleTo = function (xy) {
         var xdist = xy.x - this.x;
         var ydist = xy.y - this.y;
@@ -71,10 +81,18 @@ AIScript.modules.Space = function (aiScript, modules) {
         return result < 0 ? result + TwoPi : result;
     };
 
-    this.Point.prototype.dot = function (xy) {
-        this.x *= xy.x;
-        this.y *= xy.y;
-        return this;
+    this.Point.prototype.sign = function (other) {
+        var p2 = this.clone().negate();
+        var x1 = this.x - p2.x,
+            y1 = this.y - p2.y,
+            x2 = other.x - p2.x,
+            y2 = other.y - p2.y;
+
+        if (x1 * y2 - y1 * x2 >= 0) {
+            return 1;
+        } else {
+            return -1;
+        }
     };
 
     this.Point.prototype.rotate = function (theta) {
