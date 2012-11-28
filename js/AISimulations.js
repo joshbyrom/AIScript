@@ -6,6 +6,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Entity = modules.Entities.Entity;
     var Group = modules.Entities.Group;
     var Seek = modules.Behaviors.Seek;
+    var Arrive = modules.Behaviors.Arrive;
 
     this.LineTestSimulation = function () {
 
@@ -273,27 +274,45 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.e.applyForce(10, 10);
 
         this.group.addEntity(this.e);
-        this.instructions = 'Left Mouse Button - Seek Target \nRight Mouse Button - Face Target';
+        this.instructions = 'Left Mouse Button - Seek Target\nCtrl + Left Mouse Button - Arrive At Target\nRight Mouse Button - Face Target';
 
         this.lastLeftMouseTarget = false;
         this.lastRightMouseTarget = false;
     };
 
-    this.EntitySimulation.prototype.handleMousePressed = function (button, x, y) {
+    this.EntitySimulation.prototype.handleMousePressed = function (button, x, y, special) {
         if (button === 37) {
             this.lastLeftMouseTarget = new Point(x, y)
             this.e.clearBehaviors();
-            this.e.addBehavior(new Seek(
-                (function() {
-                    return function() {
 
-                    };
-                })(),
-                (function() {
-                    return function() {
+            var behavior = null;
+            var posFn =
+                (function () {
+                    return function () {
+                        return this.e.position;
+                    }.bind(this);
+                }).call(this);
 
-                    };
-                })()));
+            var targetFn =
+                (function () {
+                    return function () {
+                        return this.lastLeftMouseTarget;
+                    }.bind(this);
+                }).call(this);
+
+            if (special === 'control') {
+                behavior = new Arrive(posFn, targetFn,
+                    (function () {
+                        return function () {
+                            return this.e.maxForce;
+                        }.bind(this);
+                    }).call(this)
+                );
+            } else {
+                behavior = new Seek(posFn, targetFn);
+            }
+
+            this.e.addBehavior(behavior);
         } else if (button === 39) {
             this.lastRightMouseTarget = new Point(x, y)
             this.e.facePoint(this.lastRightMouseTarget);
@@ -309,7 +328,15 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.EntitySimulation.prototype.draw = function (processing) {
+        processing.fill(0, 0, 0, 0);
+        processing.stroke(0, 255, 0);
+        this.drawTarget(processing, this.lastLeftMouseTarget);
+
+        processing.stroke(255, 0, 0);
+        this.drawTarget(processing, this.lastRightMouseTarget);
+
         this.drawGroup(processing, this.group);
+
         processing.fill(255, 255, 255, 51);
 
         for (var i = 0; i < 4; ++i) {
@@ -343,7 +370,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         var forward = entity.forward(12).add(pos);
 
         processing.fill(0, 255, 0);
-        processing.triangle(pos.x, pos.y + entity.scale, forward.x, forward.y, pos.x, pos.y - entity.scale);
+        processing.line(pos.x, pos.y, forward.x, forward.y);
 
         var points = entity.polygon.points;
         var point = null,
@@ -359,5 +386,13 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         processing.endShape(processing.CLOSE);
 
+    };
+
+    this.EntitySimulation.prototype.drawTarget = function (processing, target) {
+        if (target) {
+            processing.ellipse(target.x, target.y, 12, 12);
+            processing.line(target.x, target.y - 10, target.x, target.y + 10);
+            processing.line(target.x - 10, target.y, target.x + 10, target.y);
+        };
     };
 };

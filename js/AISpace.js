@@ -439,7 +439,7 @@ AIScript.modules.Space = function (aiScript, modules) {
     };
 
     this.Polygon.prototype.removePoint = function (point) {
-        this.points.slice(this.points.indexOf(point), 1);
+        this.points.splice(this.points.indexOf(point), 1);
         this._areaDirty = true;
         this._centroidDirty = true;
     };

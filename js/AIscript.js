@@ -128,7 +128,14 @@
         return (function () {
             return function () {
                 if (this.simulation && 'handleMousePressed' in this.simulation) {
-                    this.simulation.handleMousePressed(processing.mouseButton, processing.mouseX, processing.mouseY);
+                    var special = false;
+                    if (processing.keyPressed && processing.keyCode) {
+                        if (processing.keyCode === 17) {
+                            special = 'control';
+                            console.log('control is being held down');
+                        }
+                    }
+                    this.simulation.handleMousePressed(processing.mouseButton, processing.mouseX, processing.mouseY, special);
                 }
             }.bind(this);
         }).call(this);

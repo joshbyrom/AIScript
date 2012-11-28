@@ -8,8 +8,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.acceleration = new Point();
         this.heading = new Point();
 
-        this.maxForce = 40;
-        this.maxSpeed = 12;
+        this.maxForce = 0.12;
+        this.maxSpeed = 4;
         this.friction = 0.1;
 
         this.speed = 0;
@@ -41,7 +41,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
             behavior.exit(this, reason);
         }
 
-        this.behaviors.slice(index, 1);
+        this.behaviors.splice(index, 1);
     };
 
     this.Entity.prototype.clearBehaviors = function (reason) {
@@ -55,7 +55,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
             } 
         }
 
-        this.behaviors.slice(0, n);
+        this.behaviors.length = 0;
     };
 
     this.Entity.prototype.handleAddedToGroup = function (group) {
@@ -77,7 +77,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.acceleration.y += y;
 
         var magnitude = this.acceleration.magn();
-        if (this.magnitude > this.maxForce) {
+        if (magnitude > this.maxForce) {
             this.acceleration.x = (this.acceleration.x / magnitude) * this.maxForce;
             this.acceleration.y = (this.acceleration.y / magnitude) * this.maxForce;
             this.force = this.maxForce;
@@ -130,8 +130,16 @@ AIScript.modules.Entities = function (aiScript, modules) {
             n = this.behaviors.length,
             behavior = null;
 
+        var toRemove = [];
         for (var i = 0; i < n; ++i) {
             behavior = this.behaviors[i];
+
+            if ('finished' in behavior) {
+                if (behavior.finished()) {
+                    toRemove.push(behavior);
+                    continue;
+                }
+            }
 
             if ('update' in behavior) {
                 behavior.update();
@@ -145,6 +153,12 @@ AIScript.modules.Entities = function (aiScript, modules) {
             if ('rotation' in behavior) {
 
             }
+        }
+
+        n = toRemove.length;
+        i = 0;
+        for (; i < n; ++i) {
+            this.removeBehavior(toRemove[i]);
         }
     };
 
@@ -189,7 +203,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Group.prototype.removeEntity = function (entity) {
-        this.entities.slice(this.entities.indexOf(entity), 1);
+        this.entities.splice(this.entities.indexOf(entity), 1);
         entity.handleRemovedFromGroup(this);
     };
 
