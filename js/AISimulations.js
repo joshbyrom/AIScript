@@ -272,6 +272,12 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.e.applyForce(10, 10);
 
         this.group.addEntity(this.e);
+        this.instructions = 'Left Mouse Button - Seek Target \nRight Mouse Button - Face Target';
+    };
+
+    this.EntitySimulation.prototype.handleMousePressed = function (button, x, y) {
+
+        this.e.facePoint(new Point(x, y));
     };
 
     this.EntitySimulation.prototype.exit = function (next) {
@@ -284,10 +290,15 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
     this.EntitySimulation.prototype.draw = function (processing) {
         this.drawGroup(processing, this.group);
-    };
+        processing.fill(255, 255, 255, 51);
 
-    this.EntitySimulation.prototype.handleMouseMoved = function (x, y) {
-        this.e.facePoint(new Point(x, y));
+        for (var i = 0; i < 4; ++i) {
+            processing.text(this.instructions, 12 + Math.random() * 8, 56 + Math.random() * 8);
+        }
+
+        processing.fill(255, 102, 153);
+        processing.text(this.instructions, 14 + Math.random() * 1.1, 59 + Math.random() * 1.2);
+        processing.fill(255, 156, 156, 51);
     };
 
     this.EntitySimulation.prototype.drawGroup = function (processing, group) {

@@ -128,7 +128,7 @@
         return (function () {
             return function () {
                 if (this.simulation && 'handleMousePressed' in this.simulation) {
-                    this.simulation.handleMousePressed(processing.mouseButton);
+                    this.simulation.handleMousePressed(processing.mouseButton, processing.mouseX, processing.mouseY);
                 }
             }.bind(this);
         }).call(this);
