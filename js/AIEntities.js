@@ -19,7 +19,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.rotation = new Point(1.0, 0.0);
         this.rotationTarget = new Point(1.0, 0.0);
-        this.maxTurnRate = 0.2;
+        this.maxTurnRate = 0.12;
 
         this.behaviors = [];
         this.group = null;
@@ -132,7 +132,9 @@ AIScript.modules.Entities = function (aiScript, modules) {
             angle = this.maxTurnRate;
         }
 
-        this.rotation.rotate(angle * this.rotation.sign(toTarget)).norm();
+        var amount = angle * this.rotation.sign(toTarget);
+        this.rotation.rotate(amount).norm();
+        this.polygon.rotateAroundCentroid(amount);
     };
 
     this.Entity.prototype.update = function () {
