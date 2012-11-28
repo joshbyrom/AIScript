@@ -5,6 +5,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Polygon = modules.Space.Polygon;
     var Entity = modules.Entities.Entity;
     var Group = modules.Entities.Group;
+    var Seek = modules.Behaviors.Seek;
 
     this.LineTestSimulation = function () {
 
@@ -273,11 +274,30 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         this.group.addEntity(this.e);
         this.instructions = 'Left Mouse Button - Seek Target \nRight Mouse Button - Face Target';
+
+        this.lastLeftMouseTarget = false;
+        this.lastRightMouseTarget = false;
     };
 
     this.EntitySimulation.prototype.handleMousePressed = function (button, x, y) {
+        if (button === 37) {
+            this.lastLeftMouseTarget = new Point(x, y)
+            this.e.clearBehaviors();
+            this.e.addBehavior(new Seek(
+                (function() {
+                    return function() {
 
-        this.e.facePoint(new Point(x, y));
+                    };
+                })(),
+                (function() {
+                    return function() {
+
+                    };
+                })()));
+        } else if (button === 39) {
+            this.lastRightMouseTarget = new Point(x, y)
+            this.e.facePoint(this.lastRightMouseTarget);
+        }
     };
 
     this.EntitySimulation.prototype.exit = function (next) {

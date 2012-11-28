@@ -5,6 +5,6 @@
     };
 
     this.Seek.prototype.update = function () {
-
+        
     };
 };

@@ -25,6 +25,39 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.group = null;
     };
 
+    this.Entity.prototype.addBehavior = function (behavior) {
+        if ('enter' in behavior) {
+            behavior.enter(this);
+        }
+
+        this.behaviors.push(behavior);
+    };
+
+    this.Entity.prototype.removeBehavior = function (behavior, reason) {
+        var index = this.behaviors.indexOf(behavior);
+
+        if (index < 0) return;
+        else if ('exit' in behavior) {
+            behavior.exit(this, reason);
+        }
+
+        this.behaviors.slice(index, 1);
+    };
+
+    this.Entity.prototype.clearBehaviors = function (reason) {
+        var n = this.behaviors.length,
+            current = null;
+
+        for (var i = 0; i < n; ++i) {
+            current = this.behaviors[i];
+            if ('exit' in current) {
+                current.exit(this, reason);
+            } 
+        }
+
+        this.behaviors.slice(0, n);
+    };
+
     this.Entity.prototype.handleAddedToGroup = function (group) {
         if (this.group) {
             this.handleRemovedFromGroup(this.group);
