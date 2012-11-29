@@ -23,6 +23,11 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.behaviors = [];
         this.group = null;
+
+        this.timeSinceLastBehavior = 0;
+        this.timeToIdle = 3000;
+        this.idle = false;
+        this.idleBehavior = false;
     };
 
     this.Entity.prototype.addBehavior = function (behavior) {
@@ -126,7 +131,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Entity.prototype.calculateForces = function () {
-        var forceLeft = 0,
+        var now = aiScript.pInst.millis(),
             n = this.behaviors.length,
             behavior = null;
 
@@ -134,32 +139,48 @@ AIScript.modules.Entities = function (aiScript, modules) {
         for (var i = 0; i < n; ++i) {
             behavior = this.behaviors[i];
 
-            if ('finished' in behavior) {
-                if (behavior.finished()) {
-                    toRemove.push(behavior);
-                    continue;
-                }
-            }
-
-            if ('update' in behavior) {
-                behavior.update();
-            }
-
-            if ('linear' in behavior) {
-                var linear = behavior.linear();
-                forceLeft = this.applyForce(linear.x, linear.y);
-            }
-
-            if ('rotation' in behavior) {
-
+            if (!this.handleBehavior(behavior)) {
+                toRemove.push(behavior);
             }
         }
 
-        n = toRemove.length;
+        var n2 = toRemove.length;
         i = 0;
-        for (; i < n; ++i) {
+        for (; i < n2; ++i) {
             this.removeBehavior(toRemove[i]);
         }
+        
+
+        if (n !== 0) {
+            this.timeSinceLastBehavior = now;
+            this.idle = false;
+        } else if (this.idleBehavior && now - this.timeSinceLastBehavior >= this.timeToIdle) {
+            this.handleBehavior(this.idleBehavior);
+            this.idle = true;
+        }
+    };
+
+    this.Entity.prototype.handleBehavior = function (behavior) {
+        if ('finished' in behavior) {
+            if (behavior.finished()) {
+                return false;
+            }
+        }
+
+        if ('update' in behavior) {
+            behavior.update();
+        }
+
+        if ('linear' in behavior) {
+            var linear = behavior.linear();
+            this.applyForce(linear.x, linear.y);
+        }
+
+        if ('rotation' in behavior) {
+
+        }
+
+        return true;
     };
 
     this.Entity.prototype.calculateRotation = function () {
@@ -192,6 +213,16 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.acceleration.zero();
     };
+
+    this.Entity.prototype.propertyAsFunction = function (property) {
+        return (function () {
+            return function () {
+                return this[property];
+            }.bind(this);
+        }).call(this);
+    };
+
+    // Groups
 
     this.Group = function () {
         this.entities = [];

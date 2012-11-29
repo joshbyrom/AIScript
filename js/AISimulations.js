@@ -268,12 +268,35 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         poly.addPoint(1, -1);
         poly.addPoint(-1, -1);
         poly.addPoint(-1, 1);
+
+        var poly2 = new Polygon();
+        poly2.addPoint(1, 1);
+        poly2.addPoint(1, -1);
+        poly2.addPoint(-1, -1);
+        poly2.addPoint(-1, 1);
         
         this.e = new Entity(10, 30, poly);
         this.e.scale = 5;
         this.e.applyForce(10, 10);
 
+        this.path = new Polygon();
+        this.path.addPoint(123, 123);
+        this.path.addPoint(123, 223);
+        this.path.addPoint(223, 223);
+        this.path.addPoint(223, 123);
+
+        this.pathfollower = new Entity(10, 30, poly2);
+        this.pathfollower.scale = 5;
+        this.pathfollower.applyForce(40, 40);
+        this.pathfollower.addBehavior(new modules.Behaviors.PathFollowing(this.path, 0,
+            this.pathfollower.propertyAsFunction('position'),
+            this.pathfollower.propertyAsFunction('maxForce'))
+        );
+
+        this.e.idleBehavior = new modules.Behaviors.PathFollowing(this.path, 0, this.e.propertyAsFunction('position'), this.e.propertyAsFunction('maxForce'));
+
         this.group.addEntity(this.e);
+        this.group.addEntity(this.pathfollower);
         this.instructions = 'Left Mouse Button - Seek Target\nCtrl + Left Mouse Button - Arrive At Target\nRight Mouse Button - Face Target';
 
         this.lastLeftMouseTarget = false;
@@ -286,12 +309,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             this.e.clearBehaviors();
 
             var behavior = null;
-            var posFn =
-                (function () {
-                    return function () {
-                        return this.e.position;
-                    }.bind(this);
-                }).call(this);
+            var posFn = this.e.propertyAsFunction('position');
 
             var targetFn =
                 (function () {
@@ -301,13 +319,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
                 }).call(this);
 
             if (special === 'control') {
-                behavior = new Arrive(posFn, targetFn,
-                    (function () {
-                        return function () {
-                            return this.e.maxForce;
-                        }.bind(this);
-                    }).call(this)
-                );
+                behavior = new Arrive(posFn, targetFn, this.e.propertyAsFunction('maxForce'));
             } else {
                 behavior = new Seek(posFn, targetFn);
             }
@@ -329,8 +341,12 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
     this.EntitySimulation.prototype.draw = function (processing) {
         processing.fill(0, 0, 0, 0);
+        this.drawPath(processing, this.path);
+
         processing.stroke(0, 255, 0);
-        this.drawTarget(processing, this.lastLeftMouseTarget);
+        if (!this.e.idle) {
+            this.drawTarget(processing, this.lastLeftMouseTarget);
+        }
 
         processing.stroke(255, 0, 0);
         this.drawTarget(processing, this.lastRightMouseTarget);
@@ -385,7 +401,6 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }
 
         processing.endShape(processing.CLOSE);
-
     };
 
     this.EntitySimulation.prototype.drawTarget = function (processing, target) {
@@ -394,5 +409,20 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             processing.line(target.x, target.y - 10, target.x, target.y + 10);
             processing.line(target.x - 10, target.y, target.x + 10, target.y);
         };
+    };
+
+    this.EntitySimulation.prototype.drawPath = function (processing, path) {
+        var points = path.points;
+        var n = points.length;
+
+        processing.fill(0, 0, 0, 0);
+        processing.stroke(255, 255, 255);
+        processing.beginShape();
+        for (var i = 0; i < n; ++i) {
+            point = points[i];
+            processing.vertex(point.x, point.y);
+        }
+
+        processing.endShape(processing.CLOSE);
     };
 };
