@@ -18,6 +18,8 @@
         this.paused = false;
         this.last = null;
 
+        this.keys = {};
+
         if (!modules || modules === '*') {
             modules = [];
             for (var i in AIScript.modules) {
@@ -129,11 +131,8 @@
             return function () {
                 if (this.simulation && 'handleMousePressed' in this.simulation) {
                     var special = false;
-                    if (processing.keyPressed && processing.keyCode) {
-                        if (processing.keyCode === 17) {
-                            special = 'control';
-                            console.log('control is being held down');
-                        }
+                    if (this.keys[processing.CONTROL]) {
+                        special = 'control';
                     }
                     this.simulation.handleMousePressed(processing.mouseButton, processing.mouseX, processing.mouseY, special);
                 }
@@ -144,6 +143,7 @@
     AIScript.prototype.handleKeyPressed = function (processing) {
         return (function () {
             return function () {
+                this.keys[processing.keyCode] = true;
                 if (this.simulation && 'handleKeyPressed' in this.simulation) {
                     this.simulation.handleKeyPressed(processing.keyCode);
                 }
@@ -154,6 +154,7 @@
     AIScript.prototype.handleKeyReleased = function (processing) {
         return (function () {
             return function () {
+                this.keys[processing.keyCode] = false;
                 if (this.simulation && 'handleKeyReleased' in this.simulation) {
                     this.simulation.handleKeyReleased(processing.keyCode);
                 }
