@@ -280,17 +280,23 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.e.applyForce(10, 10);
 
         this.path = new Polygon();
-        this.path.addPoint(123, 123);
-        this.path.addPoint(123, 223);
-        this.path.addPoint(223, 223);
-        this.path.addPoint(223, 123);
+        this.path.addPoint(255, 41);
+        this.path.addPoint(300, 150);
+        this.path.addPoint(408, 152);
+        this.path.addPoint(306, 217);
+        this.path.addPoint(373, 327);
+        this.path.addPoint(237, 233);
+        this.path.addPoint(181, 334);
+        this.path.addPoint(130, 230);
+        this.path.addPoint(26, 160);
+        this.path.addPoint(160, 150);
 
         this.pathfollower = new Entity(10, 30, poly2);
         this.pathfollower.scale = 5;
         this.pathfollower.applyForce(40, 40);
         this.pathfollower.addBehavior(new modules.Behaviors.PathFollowing(this.path, 0,
             this.pathfollower.propertyAsFunction('position'),
-            this.pathfollower.propertyAsFunction('maxForce'))
+            this.pathfollower.propertyAsFunction('maxForce'), -1)
         );
 
         this.e.idleBehavior = new modules.Behaviors.PathFollowing(this.path, 0, this.e.propertyAsFunction('position'), this.e.propertyAsFunction('maxForce'));

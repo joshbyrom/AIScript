@@ -24,10 +24,12 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.behaviors = [];
         this.group = null;
 
-        this.timeSinceLastBehavior = 0;
+        this.timeSinceLastBehavior = false;
         this.timeToIdle = 3000;
         this.idle = false;
         this.idleBehavior = false;
+
+        this.interupt = false;
     };
 
     this.Entity.prototype.addBehavior = function (behavior) {
@@ -43,10 +45,18 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         if (index < 0) return;
         else if ('exit' in behavior) {
-            behavior.exit(this, reason);
+            behavior.exit(this, reason || 'not provided');
         }
 
         this.behaviors.splice(index, 1);
+    };
+
+    this.Entity.prototype.removeBehaviors = function (behaviors, reason) {
+        var n = behaviors.length,
+            _reason = reason || 'not provided';
+        for (var i = 0; i < n; ++i) {
+            this.removeBehavior(behaviors[i], _reason);
+        }
     };
 
     this.Entity.prototype.clearBehaviors = function (reason) {
@@ -130,7 +140,40 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.rotationTarget = point;
     };
 
+    this.Entity.prototype.handleInterupt = function () {
+        if (this.interupt) {
+            if (this.handleBehavior(this.interupt)) {
+                this.interupting = true;
+            } else {
+                this.interupting = false;
+                this.interupt = false;
+            }
+        } else {
+            this.interupting = false;
+        }
+
+        return this.interupting;
+    };
+
+    this.Entity.prototype.handleIdle = function (now) {
+        if (this.timeSinceLastBehavior === false) {
+            this.timeSinceLastBehavior = now;
+        }
+
+        if (this.behaviors.length !== 0) {
+            this.timeSinceLastBehavior = now;
+            this.idle = false;
+        } else if (this.idleBehavior && now - this.timeSinceLastBehavior >= this.timeToIdle) {
+            this.handleBehavior(this.idleBehavior);
+            this.idle = true;
+        }
+    };
+
     this.Entity.prototype.calculateForces = function () {
+        if (this.handleInterupt()) {
+            return;
+        }
+
         var now = aiScript.pInst.millis(),
             n = this.behaviors.length,
             behavior = null;
@@ -144,20 +187,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
             }
         }
 
-        var n2 = toRemove.length;
-        i = 0;
-        for (; i < n2; ++i) {
-            this.removeBehavior(toRemove[i]);
-        }
-        
-
-        if (n !== 0) {
-            this.timeSinceLastBehavior = now;
-            this.idle = false;
-        } else if (this.idleBehavior && now - this.timeSinceLastBehavior >= this.timeToIdle) {
-            this.handleBehavior(this.idleBehavior);
-            this.idle = true;
-        }
+        this.removeBehaviors(toRemove, 'finished');
+        this.handleIdle(now);
     };
 
     this.Entity.prototype.handleBehavior = function (behavior) {

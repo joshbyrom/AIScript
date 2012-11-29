@@ -6,6 +6,10 @@
         this.to = targetFn;
 
         this.lastLinear = new Point();
+
+        this.isFinished = false;
+        this.distCheckInterval = 0;
+        this.distCheckRate = 3;
     };
 
     this.Seek.prototype.update = function () {
@@ -23,6 +27,20 @@
 
         this.lastLinear.x = target.x - point.x;
         this.lastLinear.y = target.y - point.y;
+
+        this.distCheckInterval = this.distCheckInterval + 1;
+        if (this.distCheckInterval === this.distCheckRate) {
+            this.distCheckInterval = 0;
+
+            var magn = this.lastLinear.magn();
+            if (magn < 1) {
+                this.isFinished = true;
+            }
+        }
+    };
+
+    this.Seek.prototype.finished = function () {
+        return this.isFinished;
     };
 
     this.Seek.prototype.linear = function () {
@@ -123,9 +141,10 @@
     };
 
     // path following
-    this.PathFollowing = function PathFollowing(path, startingIndex, fromFn, forceFn) {
+    this.PathFollowing = function PathFollowing(path, startingIndex, fromFn, forceFn, direction) {
         this.path = path;
         this.points = path.points;
+        this.direction = direction || 1;
 
         this.arrive = new modules.Behaviors.Arrive(fromFn, this.getTarget.bind(this), forceFn);
         this.currentBehavior = this.arrive;
@@ -143,7 +162,12 @@
 
         if (this.currentBehavior.finished && this.currentBehavior.finished()) {
             if (this.currentBehavior === this.arrive) {
-                this.currentIndex = (this.currentIndex + 1) % this.points.length;
+                this.currentIndex = (this.currentIndex + this.direction) % this.points.length;
+                
+                if (this.currentIndex < 0) {
+                    this.currentIndex += this.points.length;
+                }
+
                 if (this.behaviorsAtPoints[this.currentIndex]) {
                     this.currentBehavior = this.bahaviorsAtPoints[this.currentIndex];
                 }
