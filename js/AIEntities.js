@@ -1,5 +1,6 @@
 AIScript.modules.Entities = function (aiScript, modules) {
     var Point = modules.Space.Point;
+    var Smoother = modules.Space.Smoother;
     var Polygon = modules.Space.Polygon;
 
     this.Entity = function Entity(x, y, polygon) {
@@ -7,6 +8,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.velocity = new Point();
         this.acceleration = new Point();
         this.heading = new Point();
+
+        var smoothMemory = 20;
+
+        this.headingSmoother = new Smoother(smoothMemory);
+        this.velocitySmoother = new Smoother(smoothMemory);
+        this.accelerationSmoother = new Smoother(smoothMemory);
+        this.positionSmoother = new Smoother(smoothMemory);
 
         this.maxForce = 0.12;
         this.maxSpeed = 4;
@@ -18,7 +26,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.polygon.clonePoints(polygon);
         this.scale = 1.0;
 
-        this.rotation = new Point(1.0, 0.0);
+        this.rotation = new Point(1.0, 0.0);    // rotation smoother ?
         this.rotationTarget = new Point(1.0, 0.0);
         this.maxTurnRate = 0.12;
 
@@ -32,7 +40,6 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.idle = false;
         this.rotationIdle = false;
         this.idleBehavior = false;
-
 
         this.interupt = false;
     };
@@ -113,9 +120,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
         return result.add(this.position);
     };
 
-    this.Entity.prototype.forward = function (scale) {
-        var result = new modules.Space.Point(this.heading.x, this.heading.y);
-        return result.mul(scale || 10);
+    this.Entity.prototype.forward = function () {
+        return this.headingSmoother.average();
     };
 
     this.Entity.prototype.mass = function () {
@@ -141,6 +147,11 @@ AIScript.modules.Entities = function (aiScript, modules) {
             this.heading.x = this.velocity.x / this.speed;
             this.heading.y = this.velocity.y / this.speed;
         }
+
+        // update smoothers for averages (typically for behaviors)
+        this.headingSmoother.add(this.heading.clone());
+        this.velocitySmoother.add(this.velocity.clone());
+        this.accelerationSmoother.add(this.acceleration.clone());
     };
 
     this.Entity.prototype.facePoint = function (point) {
@@ -182,7 +193,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
         }
 
         if (now - this.timeSinceLastRotation > this.timeToIdle) {
-            this.rotationTarget = this.forward(10).add(this.position);
+            this.rotationTarget = this.forward().add(this.position);
             this.rotationIdle = true;
         };
     };
@@ -233,6 +244,10 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Entity.prototype.calculateRotation = function () {
+        if (this.rotationTarget.almostEquals(this.position)) {
+            return;
+        }
+
         var toTarget = this.rotationTarget.clone().sub(this.position).norm();
 
         var dot = this.rotation.dot(toTarget);
@@ -260,7 +275,9 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.calculateForces();
         this.calculateRotation();
         this.calculateVelocity();
+
         this.position.add(this.velocity);
+        this.positionSmoother.add(this.position.clone());
 
         this.acceleration.zero();
     };

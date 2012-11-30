@@ -368,7 +368,9 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }
 
         processing.stroke(255, 0, 0);
-        this.drawTarget(processing, this.lastRightMouseTarget);
+        if (!this.e.rotationIdle) {
+            this.drawTarget(processing, this.lastRightMouseTarget);
+        }
 
         this.drawGroup(processing, this.group);
 

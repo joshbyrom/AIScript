@@ -56,6 +56,13 @@ AIScript.modules.Space = function (aiScript, modules) {
         return this;
     };
 
+    this.Point.prototype.almostEquals = function (other) {
+        var xdiff = Math.abs(other.x - this.x);
+        var ydiff = Math.abs(other.y - this.y);
+
+        return xdiff < 0.001 && ydiff < 0.001;
+    };
+
     this.Point.prototype.dot = function (other) {
         return this.x * other.x + this.y * other.y;
     };
@@ -184,6 +191,40 @@ AIScript.modules.Space = function (aiScript, modules) {
         return closest;
     };
 
+    // smoother for averages
+    this.Smoother = function Smoother(max) {
+        this.max = max;
+        this.elems = [];
+    };
+
+    this.Smoother.prototype.add = function (toAdd) {
+        this.elems.push(toAdd);
+        if (this.elems.length > this.max) {
+            this.elems.splice(0, 1);
+        };
+    };
+
+    this.Smoother.prototype.remove = function (toRemove) {
+        this.elems.splice(this.elems.indexOf(toRemove), 1);
+    };
+
+    this.Smoother.prototype.average = function () {
+        var accum = new modules.Space.Point(),
+            n = this.elems.length;
+
+        if (n === 0) {
+            return 0;
+        }
+
+        for (var i = 0; i < n; ++i) {
+            accum.add(this.elems[i]);
+        }
+
+        accum.x /= n;
+        accum.y /= n;
+
+        return accum;
+    };
 
     // line class
     this.Line = function Line(start, end) {
