@@ -46,6 +46,11 @@ AIScript.modules.Space = function (aiScript, modules) {
 
     this.Point.prototype.norm = function () {
         var magn = this.magn();
+
+        if (magn === 0) {
+            magn = 0.000001;
+        }
+
         this.x /= magn;
         this.y /= magn;
         return this;
@@ -110,8 +115,9 @@ AIScript.modules.Space = function (aiScript, modules) {
         var originX = this.x - center.x;
         var originY = this.y - center.y;
 
-        var cos = Math.cos(theta);
-        var sin = Math.sin(theta);
+        var _theta = theta % TwoPi;
+        var cos = Math.cos(_theta);
+        var sin = Math.sin(_theta);
 
         this.x = (originX * cos - originY * sin) + center.x;
         this.y = (originY * cos + originX * sin) + center.y;
@@ -426,6 +432,19 @@ AIScript.modules.Space = function (aiScript, modules) {
                 this.points.push(new modules.Space.Point(points[i].x, points[i].y));
             }
         };
+    };
+
+    this.Polygon.prototype.clonePoints = function (polygon) {
+        if (polygon === null || polygon === undefined) return;
+
+        var points = polygon.points,
+            n = points.length,
+            point = null;
+
+        for (var i = 0; i < n; ++i) {
+            point = points[i];
+            this.addPoint(point.clone());
+        }
     };
 
     this.Polygon.prototype.addPoint = function (point) {

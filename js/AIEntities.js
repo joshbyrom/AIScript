@@ -14,7 +14,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.speed = 0;
 
-        this.polygon = polygon || new Polygon();
+        this.polygon = new Polygon();
+        this.polygon.clonePoints(polygon);
         this.scale = 1.0;
 
         this.rotation = new Point(1.0, 0.0);
@@ -25,9 +26,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.group = null;
 
         this.timeSinceLastBehavior = false;
+        this.timeSinceLastRotation = false;
         this.timeToIdle = 3000;
+
         this.idle = false;
+        this.rotationIdle = false;
         this.idleBehavior = false;
+
 
         this.interupt = false;
     };
@@ -132,12 +137,16 @@ AIScript.modules.Entities = function (aiScript, modules) {
             this.acceleration.zero();
         }
 
-        this.heading.x = this.velocity.x / this.speed;
-        this.heading.y = this.velocity.y / this.speed;
+        if (this.speed !== 0) {
+            this.heading.x = this.velocity.x / this.speed;
+            this.heading.y = this.velocity.y / this.speed;
+        }
     };
 
     this.Entity.prototype.facePoint = function (point) {
         this.rotationTarget = point;
+        this.timeSinceLastRotation = aiScript.pInst.millis();
+        this.rotationIdle = false;
     };
 
     this.Entity.prototype.handleInterupt = function () {
@@ -160,6 +169,10 @@ AIScript.modules.Entities = function (aiScript, modules) {
             this.timeSinceLastBehavior = now;
         }
 
+        if (this.timeSinceLastRotation === false) {
+            this.timeSinceLastRotation = now;
+        }
+
         if (this.behaviors.length !== 0) {
             this.timeSinceLastBehavior = now;
             this.idle = false;
@@ -167,6 +180,11 @@ AIScript.modules.Entities = function (aiScript, modules) {
             this.handleBehavior(this.idleBehavior);
             this.idle = true;
         }
+
+        if (now - this.timeSinceLastRotation > this.timeToIdle) {
+            this.rotationTarget = this.forward(10).add(this.position);
+            this.rotationIdle = true;
+        };
     };
 
     this.Entity.prototype.calculateForces = function () {
@@ -208,7 +226,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
         }
 
         if ('rotation' in behavior) {
-
+            // average it here TODO:: then use FACE POINT method
         }
 
         return true;
@@ -216,6 +234,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
     this.Entity.prototype.calculateRotation = function () {
         var toTarget = this.rotationTarget.clone().sub(this.position).norm();
+
         var dot = this.rotation.dot(toTarget);
 
         if (dot > 1) {
@@ -232,6 +251,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
         }
 
         var amount = angle * this.rotation.sign(toTarget);
+
         this.rotation.rotate(amount).norm();
         this.polygon.rotateAroundCentroid(amount);
     };

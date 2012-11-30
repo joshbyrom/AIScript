@@ -261,6 +261,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.EntitySimulation.prototype.enter = function (last) {
+        this.numberToSpawn = 8;
+
         this.group = new Group();
         
         var poly = new Polygon();
@@ -291,18 +293,29 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.path.addPoint(26, 160);
         this.path.addPoint(160, 150);
 
-        this.pathfollower = new Entity(10, 30, poly2);
-        this.pathfollower.scale = 5;
-        this.pathfollower.applyForce(40, 40);
-        this.pathfollower.addBehavior(new modules.Behaviors.PathFollowing(this.path, 0,
-            this.pathfollower.propertyAsFunction('position'),
-            this.pathfollower.propertyAsFunction('maxForce'), -1)
-        );
+        this.count = 0;
+        this.handle = function () {
+            this.pathfollower = new Entity(10, 30, poly2);
+            this.pathfollower.scale = 5;
+            this.pathfollower.applyForce(40, 40);
+            this.pathfollower.addBehavior(new modules.Behaviors.PathFollowing(this.path, 0,
+                this.pathfollower.propertyAsFunction('position'),
+                this.pathfollower.propertyAsFunction('maxForce'), -1)
+            );
+            this.group.addEntity(this.pathfollower);
+            this.count += 1;
+
+
+            if (this.count < this.numberToSpawn) {
+                setTimeout(this.handle, 1000);
+            }
+        }.bind(this);
+
+        //setTimeout(this.handle, 1000);
 
         this.e.idleBehavior = new modules.Behaviors.PathFollowing(this.path, 0, this.e.propertyAsFunction('position'), this.e.propertyAsFunction('maxForce'));
 
         this.group.addEntity(this.e);
-        this.group.addEntity(this.pathfollower);
         this.instructions = 'Left Mouse Button - Seek Target\nCtrl + Left Mouse Button - Arrive At Target\nRight Mouse Button - Face Target';
 
         this.lastLeftMouseTarget = false;

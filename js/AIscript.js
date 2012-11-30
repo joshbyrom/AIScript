@@ -210,8 +210,6 @@ AIScript.modules.Goodbye = function Goodbye(aiScript) {
 
 addEvent(window, 'load', function () {
     window.aiScript = AIScript('Space', 'Entities', 'Behaviors', 'Simulations', function (box) {
-        var e = new box.Entities.Entity(0, 0, 1, 2);
-
         this.simulate(new box.Simulations.LineTestSimulation());
         this.start();
     });
