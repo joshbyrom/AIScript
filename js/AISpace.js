@@ -460,6 +460,7 @@ AIScript.modules.Space = function (aiScript, modules) {
     // poly class
     this.Polygon = function Polygon(points) {
         this.points = [];
+        this._copy = [];
 
         this._areaDirty = true;
         this._area = 0;
@@ -468,15 +469,28 @@ AIScript.modules.Space = function (aiScript, modules) {
         this._centroidDirty = true;
 
         if(points) {
-            var n = points.length;
-            for(var i = 0; i < n; ++i) {
-                this.points.push(new modules.Space.Point(points[i].x, points[i].y));
+            var n = points.length, point = null;
+            for (var i = 0; i < n; ++i) {
+                point = new modules.Space.Point(points[i].x, points[i].y);
+                this.points.push(point);
+                this._copy.push(point.clone());
             }
         };
     };
 
+    this.Polygon.prototype.reset = function (polygon) {
+        var n = this.points.length;
+
+        for (var i = 0; i < n; ++i) {
+            this.points[i].x = this._copy[i].x;
+            this.points[i].y = this._copy[i].y;
+        }
+    };
+
     this.Polygon.prototype.clonePoints = function (polygon) {
         if (polygon === null || polygon === undefined) return;
+
+        this.clearPoints();
 
         var points = polygon.points,
             n = points.length,
@@ -494,12 +508,17 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
 
         this.points.push(point);
+        this._copy.push(point.clone());
         this._areaDirty = true;
         this._centroidDirty = true;
     };
 
     this.Polygon.prototype.removePoint = function (point) {
-        this.points.splice(this.points.indexOf(point), 1);
+        var index = this.points.indexOf(point);
+
+        this.points.splice(index, 1);
+        this._copy.splice(index, 1);
+
         this._areaDirty = true;
         this._centroidDirty = true;
     };
