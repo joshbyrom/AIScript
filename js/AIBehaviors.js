@@ -54,7 +54,7 @@
         this.forceFn = forceFn;
         this.isFinished = false;
         this.slowdownRadius = 100.0;
-        this.slowdownRate = 20.0;
+        this.slowdownRate = 10.0;
         this.lastLinear = new Point();
     };
 
@@ -63,7 +63,7 @@
         var desired = this.seek.linear();
 
         var magn = desired.magn();
-        if (magn > 1) {
+        if (magn > 5) { // TODO:: this should be entered elsewhere (5 = 5 pixels or "a very small distance")
             this.isFinished = false;
             if (magn < this.slowdownRadius) {
                 var x = desired.x / magn;

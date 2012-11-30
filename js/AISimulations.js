@@ -283,15 +283,14 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         this.path = new Polygon();
         this.path.addPoint(255, 41);
-        this.path.addPoint(300, 150);
+        this.path.addPoint(408, 41);
         this.path.addPoint(408, 152);
-        this.path.addPoint(306, 217);
-        this.path.addPoint(373, 327);
-        this.path.addPoint(237, 233);
-        this.path.addPoint(181, 334);
+        this.path.addPoint(506, 217);
+        this.path.addPoint(506, 327);
+        this.path.addPoint(130, 327);
         this.path.addPoint(130, 230);
-        this.path.addPoint(26, 160);
         this.path.addPoint(160, 150);
+        this.path.addPoint(255, 150);
 
         this.count = 0;
         this.handle = function () {
@@ -345,7 +344,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
             this.e.addBehavior(behavior);
         } else if (button === 39) {
-            this.lastRightMouseTarget = new Point(x, y)
+            this.lastRightMouseTarget = new Point(x, y);
             this.e.facePoint(this.lastRightMouseTarget);
         }
     };
@@ -355,6 +354,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.EntitySimulation.prototype.update = function () {
+        this.path.rotateAroundCentroid(0.001);
         this.group.update();
     };
 
