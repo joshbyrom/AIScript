@@ -523,6 +523,11 @@ AIScript.modules.Space = function (aiScript, modules) {
         this._centroidDirty = true;
     };
 
+    this.Polygon.prototype.clearPoints = function () {
+        this.points.length = 0;
+        this._copy.length = 0;
+    };
+
     this.Polygon.prototype.isPointInside = function (point) {
         var current = null, 
             next = null, 

@@ -311,7 +311,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             }
         }.bind(this);
 
-        //setTimeout(this.handle, 1000);
+        setTimeout(this.handle, 1000);
 
         this.e.idleBehavior = new modules.Behaviors.PathFollowing(this.path, 0, this.e.propertyAsFunction('position'), this.e.propertyAsFunction('maxForce'));
 
