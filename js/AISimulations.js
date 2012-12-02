@@ -2,6 +2,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Line = modules.Space.Line;
     var Point = modules.Space.Point;
     var Circle = modules.Space.Circle;
+    var Rectangle = modules.Space.Rectangle;
     var Polygon = modules.Space.Polygon;
     var Entity = modules.Entities.Entity;
     var Group = modules.Entities.Group;
@@ -162,6 +163,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.poly5.area();
 
         this.iPoints2 = [];
+
+        this.rect = new Rectangle();
     };
 
     this.PolygonSimulation.prototype.exit = function (next) {
@@ -182,6 +185,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.iPoints = Array.prototype.concat(this.iPoints, this.line.intersectsPolygon(this.poly3));
 
         this.iPoints2 = this.poly4.intersectsPolygon(this.poly5);
+
+        this.rect.encompass(this.poly1.boundingRect(), this.poly2.boundingRect(), this.poly3.boundingRect());
     };
 
     this.PolygonSimulation.prototype.draw = function (processing) {
@@ -190,6 +195,10 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.drawPolygon(processing, this.poly3, true);
         this.drawPolygon(processing, this.poly4);
         this.drawPolygon(processing, this.poly5);
+
+        processing.stroke(255, 255, 255);
+        processing.fill(0, 0, 0, 0);
+        processing.rect(this.rect.left, this.rect.top, this.rect.width(), this.rect.height());
 
         processing.strokeWeight(2);
         if (this.iPoints.length === 0) {
@@ -251,7 +260,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         
         if (drawBoundingRect) {
             processing.fill(0, 0, 0, 0);
-            processing.rect(rect.left, rect.top, rect.width, rect.height);
+            processing.rect(rect.left, rect.top, rect.width(), rect.height());
         }
     };
 

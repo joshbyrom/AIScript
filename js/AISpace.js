@@ -439,9 +439,67 @@ AIScript.modules.Space = function (aiScript, modules) {
         this.right = right;
         this.top = top;
         this.bottom = bottom;
+    };
 
-        this.width = right - left;
-        this.height = bottom - top; // processing.js has inverted Y
+    this.Rectangle.prototype.width = function () {
+        return this.right - this.left;
+    };
+
+    this.Rectangle.prototype.height = function () {
+        return this.bottom - this.top;
+    };
+
+    this.Rectangle.prototype.encompass = function () {
+        var rects = typeof arguments[0] === 'string' ? arguments[0] : Array.prototype.slice.call(arguments);
+        var n = rects.length;
+
+        var first = n > 0 ? rects[0] : false;
+        if (first) {
+           first.update();
+        }
+
+        var current = null,
+            minX = first ? first.left : 0,
+            maxX = first ? first.right : 0,
+            minY = first ? first.top : 0,
+            maxY = first ? first.bottom : 0;
+
+        for (var i = 1; i < n; ++i) {
+            current = rects[i];
+            current.update();
+
+            if (current.left < minX) {
+                minX = current.left;
+            } else if (current.right > maxX) {
+                maxX = current.right;
+            }
+
+            if (current.top < minY) {
+                minY = current.top;
+            } else if (current.bottom > maxY) {
+                maxY = current.bottom;
+            }
+
+        }
+
+        this.left = minX;
+        this.right = maxX;
+        this.top = minY;
+        this.bottom = maxY;
+    };
+
+    this.Rectangle.prototype.update = function () {
+        if (this.left > this.right) {
+            var tmp = this.left;
+            this.left = this.right;
+            this.right = this.tmp;
+        }
+
+        if (this.top > this.bottom) {
+            var tmp = this.top;
+            this.top = this.bottom;
+            this.bottom = this.tmp;
+        }
     };
 
     this.Rectangle.prototype.isPointInside = function (x, y) {
