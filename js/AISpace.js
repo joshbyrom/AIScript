@@ -435,10 +435,21 @@ AIScript.modules.Space = function (aiScript, modules) {
 
     // rect class
     this.Rectangle = function Rectangle(left, right, top, bottom) {
-        this.left = left;
-        this.right = right;
-        this.top = top;
-        this.bottom = bottom;
+        this.left = left || 0;
+        this.right = right || 0;
+        this.top = top || 0;
+        this.bottom = bottom || 0;
+    };
+
+    this.Rectangle.prototype.copy = function (rect) {
+        var r = new modules.Space.Rectangle();
+
+        r.left = rect.left;
+        r.right = rect.right;
+        r.top = rect.top;
+        r.bottom = rect.bottom;
+
+        return r;
     };
 
     this.Rectangle.prototype.width = function () {
@@ -449,15 +460,35 @@ AIScript.modules.Space = function (aiScript, modules) {
         return this.bottom - this.top;
     };
 
+    this.Rectangle.prototype.add = function (point) {
+        this.left += point.x;
+        this.right += point.x;
+
+        this.top += point.y;
+        this.bottom += point.y;
+        return this;
+    };
+
+    this.Rectangle.prototype.scale = function (xScale, yScale) {
+        this.left *= xScale || 1;
+        this.right *= xScale || 1;
+
+        this.top *= yScale || 1;
+        this.bottom *= yScale || 1;
+        return this;
+    };
+
     this.Rectangle.prototype.encompass = function () {
-        var rects = typeof arguments[0] === 'string' ? arguments[0] : Array.prototype.slice.call(arguments);
+        var rects = Array.prototype.slice.call(arguments);
+
+
+        if (Array.isArray(rects[0])) {
+            rects = rects[0];
+        }
+
         var n = rects.length;
 
         var first = n > 0 ? rects[0] : false;
-        if (first) {
-           first.update();
-        }
-
         var current = null,
             minX = first ? first.left : 0,
             maxX = first ? first.right : 0,
@@ -466,7 +497,6 @@ AIScript.modules.Space = function (aiScript, modules) {
 
         for (var i = 1; i < n; ++i) {
             current = rects[i];
-            current.update();
 
             if (current.left < minX) {
                 minX = current.left;
@@ -545,7 +575,7 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
     };
 
-    this.Polygon.prototype.clonePoints = function (polygon) {
+    this.Polygon.prototype.clonePoints = function (polygon, scale) {
         if (polygon === null || polygon === undefined) return;
 
         this.clearPoints();
@@ -558,6 +588,12 @@ AIScript.modules.Space = function (aiScript, modules) {
             point = points[i];
             this.addPoint(point.clone());
         }
+
+        if (scale && scale !== 1) {
+            this.scale(scale);
+        }
+
+        return this;
     };
 
     this.Polygon.prototype.addPoint = function (point) {
@@ -569,6 +605,8 @@ AIScript.modules.Space = function (aiScript, modules) {
         this._copy.push(point.clone());
         this._areaDirty = true;
         this._centroidDirty = true;
+
+        return this;
     };
 
     this.Polygon.prototype.removePoint = function (point) {
@@ -579,11 +617,52 @@ AIScript.modules.Space = function (aiScript, modules) {
 
         this._areaDirty = true;
         this._centroidDirty = true;
+
+        return this;
     };
 
     this.Polygon.prototype.clearPoints = function () {
         this.points.length = 0;
         this._copy.length = 0;
+
+        return this;
+    };
+
+    this.Polygon.prototype.scale = function (xScale, yScale) {
+        if (xScale == 1 && yScale == 1) return;
+
+        var guardedXScale = xScale ? Math.abs(xScale) : 1,
+            guardedYScale = yScale ? Math.abs(yScale) : xScale ? xScale : 1;
+
+        var rotation = this.points[0] ? this.points[0].angleTo(this.centroid()) : 0,
+            n = this.points.length, point = null;
+
+        this.reset();
+
+        for (var i = 0; i < n; ++i) {
+            point = this.points[i];
+
+            point.x *= guardedXScale;
+            point.y *= guardedYScale;
+        }
+
+        this.rotateAroundCentroid(rotation);
+
+        return this;
+    };
+
+    this.Polygon.prototype.translate = function (point) {
+        var n = this.points.length,
+            current = null;
+
+        for (var i = 0; i < n; ++i) {
+            current = this.points[i];
+
+            current.x += point.x;
+            current.y += point.y;
+        }
+        
+        return this;
     };
 
     this.Polygon.prototype.isPointInside = function (point) {
@@ -702,12 +781,16 @@ AIScript.modules.Space = function (aiScript, modules) {
         }
 
         this._centroidDirty = true;
+
+        return this;
     };
 
     this.Polygon.prototype.rotateAroundCentroid = function (theta) {
         var centroid = this.centroid();
         this.rotateAround(centroid, theta);
         this._centroidDirty = false; // rotated in place
+
+        return this;
     };
 
     this.Polygon.prototype.intersectsPolygon = function (otherPoly) {

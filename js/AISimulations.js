@@ -285,10 +285,6 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         poly2.addPoint(1, -1);
         poly2.addPoint(-1, -1);
         poly2.addPoint(-1, 1);
-        
-        this.e = new Entity(10, 30, poly);
-        this.e.scale = 5;
-        this.e.applyForce(10, 10);
 
         this.path = new Polygon();
         this.path.addPoint(255, 41);
@@ -306,7 +302,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             this.pathfollower = new Entity(10, 30, poly2);
             this.pathfollower.scale = 5;
             this.pathfollower.applyForce(40, 40);
-            this.pathfollower.addBehavior(new modules.Behaviors.PathFollowing(this.path, 0,
+            this.pathfollower.idleBehavior = (new modules.Behaviors.PathFollowing(this.path, 0,
                 this.pathfollower.propertyAsFunction('position'),
                 this.pathfollower.propertyAsFunction('maxForce'), -1)
             );
@@ -320,23 +316,26 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }.bind(this);
 
         setTimeout(this.handle, 1000);
-
-        this.e.idleBehavior = new modules.Behaviors.PathFollowing(this.path, 0, this.e.propertyAsFunction('position'), this.e.propertyAsFunction('maxForce'));
-
-        this.group.addEntity(this.e);
-        this.instructions = 'Left Mouse Button - Seek Target\nCtrl + Left Mouse Button - Arrive At Target\nRight Mouse Button - Face Target';
+        this.instructions = 'Left Mouse Button - Select Entity or Place Seek Target\nCtrl + Left Mouse Button - Arrive At Target\nRight Mouse Button - Face Target';
 
         this.lastLeftMouseTarget = false;
         this.lastRightMouseTarget = false;
     };
 
     this.EntitySimulation.prototype.handleMousePressed = function (button, x, y, special) {
-        if (button === 37) {
+        var old = this.group.focused;
+        this.group.handleMousePressed(button, x, y, special);
+
+        if (old && old !== this.group.focused) {
+            old.clearBehaviors();
+        }
+
+        if (button === 37 && this.group.focused) {
             this.lastLeftMouseTarget = new Point(x, y)
-            this.e.clearBehaviors();
+            this.group.focused.clearBehaviors();
 
             var behavior = null;
-            var posFn = this.e.propertyAsFunction('position');
+            var posFn = this.group.focused.propertyAsFunction('position');
 
             var targetFn =
                 (function () {
@@ -346,16 +345,20 @@ AIScript.modules.Simulations = function (aiScript, modules) {
                 }).call(this);
 
             if (special === 'control') {
-                behavior = new Arrive(posFn, targetFn, this.e.propertyAsFunction('maxForce'));
+                behavior = new Arrive(posFn, targetFn, this.group.focused.propertyAsFunction('maxForce'));
             } else {
                 behavior = new Seek(posFn, targetFn);
             }
 
-            this.e.addBehavior(behavior);
+            this.group.focused.addBehavior(behavior);
         } else if (button === 39) {
             this.lastRightMouseTarget = new Point(x, y);
-            this.e.facePoint(this.lastRightMouseTarget);
+            this.group.focused.facePoint(this.lastRightMouseTarget);
         }
+    };
+
+    this.EntitySimulation.prototype.handleMouseMoved = function (x, y) {
+        this.group.handleMouseMoved(x, y);
     };
 
     this.EntitySimulation.prototype.exit = function (next) {
@@ -372,12 +375,13 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.drawPath(processing, this.path);
 
         processing.stroke(0, 255, 0);
-        if (!this.e.idle) {
+        if (this.group.focused && !this.group.focused.idle) {
             this.drawTarget(processing, this.lastLeftMouseTarget);
         }
+        
 
         processing.stroke(255, 0, 0);
-        if (!this.e.rotationIdle) {
+        if (this.group.focused && !this.group.focused.rotationIdle) {
             this.drawTarget(processing, this.lastRightMouseTarget);
         }
 
@@ -401,6 +405,13 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         for (var i = 0; i < n; ++i) {
             this.drawEntity(processing, ents[i]);
         }
+
+        var rect = group.boundingRect();
+
+        processing.stroke(255, 255, 255);
+        processing.strokeWeight(1);
+        processing.fill(0, 0, 0, 0);
+        processing.rect(rect.left, rect.top, rect.width(), rect.height());
     };
 
     this.EntitySimulation.prototype.drawEntity = function (processing, entity) {
@@ -424,6 +435,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         processing.fill(123, 145, 213);
         processing.stroke(255, 255, 255);
+        processing.strokeWeight(1);
         processing.beginShape();
         for (var i = 0; i < n; ++i) {
             point = points[i];
@@ -431,6 +443,19 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }
 
         processing.endShape(processing.CLOSE);
+
+        var rect = entity.boundingRect();
+        if (entity === this.group.focused) {
+            processing.stroke(255, 255, 0);
+            processing.strokeWeight(2);
+        } else if (entity.mouseIn) {
+            processing.stroke(0, 0, 255);
+            processing.strokeWeight(4);
+        }
+
+
+        processing.fill(0, 0, 0, 0);
+        processing.rect(rect.left, rect.top, rect.width(), rect.height());
     };
 
     this.EntitySimulation.prototype.drawTarget = function (processing, target) {

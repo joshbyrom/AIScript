@@ -1,7 +1,7 @@
 AIScript
 ====================================
 
-I created this project to act as a framework to easily implement my projects using JavaScript.
+A framework that can be used to easily implement AI projects using JavaScript. The views are available through an HTML5 Canvas element using the processing.js library. The project interfaces with processing using pure Javascript, but adding your own PDE files would be an trivial addition. Several simulations are provided to illustrate how to use the scripts. A build process will be designed in the future to package and minify the scripts into a single script for ease-of-use.
 
 Scene Graph
 ------------------
@@ -27,15 +27,14 @@ For example, the very first simulation I created used the Space, Entity, and Sim
 addEvent(window, 'load', function () {
     AIScript('Space', 'Entities', 'Simulations', function (box) {
 	// Space, Entity, and Simulations are included in the box object
-        var e = new box.Entities.Entity(0, 0, 1, 2);	// this was just for testing
-
-        this.simulate(new box.Simulations.LineTestSimulation());
+        this.simulate(new Simulation());
         this.start();
     });
 });
 
-This is commonly referred to as sandboxing.
+This is commonly referred to as sandboxing. You can re-init, restart, and pause a simulation at anytime from within the Simulations module. You also have access to the rendering context at all times through the pInst object of the main script. However, the rendering context is passed to every simulations Draw method for convenience.
 
+Calling simulate() on another simulation while a simulation is in progress will cause a transition fire exit and enter methods on the simulation(s).
 
 Notes
 ------------------

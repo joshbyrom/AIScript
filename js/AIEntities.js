@@ -2,6 +2,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
     var Point = modules.Space.Point;
     var Smoother = modules.Space.Smoother;
     var Polygon = modules.Space.Polygon;
+    var Rectangle = modules.Space.Rectangle;
 
     this.Entity = function Entity(x, y, polygon) {
         this.position = new Point(x, y);
@@ -42,6 +43,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.idleBehavior = false;
 
         this.interupt = false;
+    };
+
+    this.Entity.prototype.boundingRect = function () {
+        return new Rectangle()
+                 .copy(this.polygon.boundingRect())
+                 .scale(this.scale, this.scale)
+                 .add(this.position);
     };
 
     this.Entity.prototype.addBehavior = function (behavior) {
@@ -290,32 +298,237 @@ AIScript.modules.Entities = function (aiScript, modules) {
         }).call(this);
     };
 
+    this.Entity.prototype.isPointInside = function (point) {
+        var global = new Polygon().clonePoints(this.polygon, this.scale).translate(this.position);
+        return global.isPointInside(point);
+    };
+
     // Groups
 
     this.Group = function () {
         this.entities = [];
+        this.entityDirty = false;
+
+        this.rect = new Rectangle();
+        this.mouseIn = false;
+
+        this.mouseInElements = [];
+        this.focused = false;
+
+        this.lastKnownMouseX = 0;
+        this.lastKnownMouseY = 0;
+    };
+
+    this.Group.prototype.giveFocus = function (entity) {
+        this.loseFocus();
+
+        this.focused = entity;
+        if (this.focused.gainFocus) {
+            this.focused.gainFocus();
+        }
+    };
+
+    this.Group.prototype.loseFocus = function () {
+        if (this.focused && this.focused.loseFocus) {
+            this.focused.loseFocus();
+        }
+
+        this.focused = false;
     };
 
     this.Group.prototype.addEntity = function (entity) {
         this.entities.push(entity);
         entity.handleAddedToGroup(this);
+        this.entityDirty = true;
+
+        entity.mouseIn = false;
     };
 
     this.Group.prototype.removeEntity = function (entity) {
         this.entities.splice(this.entities.indexOf(entity), 1);
         entity.handleRemovedFromGroup(this);
+        this.entityDirty = true;
+
+        delete entity.mouseIn;
     };
 
     this.Group.prototype.update = function () {
         var entity = null,
             n = this.entities.length;
 
+        var rects = [];
         for (var i = 0; i < n; ++i) {
             entity = this.entities[i];
 
             if ('update' in entity) {
                 entity.update();
             }
+
+            rects.push(entity.boundingRect());
+        }
+
+        this.rect.encompass(rects);
+        this.handleMouse(this.lastKnownMouseX, this.lastKnownMouseY);
+
+        if (this.entityDirty) {
+            this.entityDirty = false;
         }
     };
+
+    this.Group.prototype.boundingRect = function () {
+        return this.rect;
+    };
+
+    this.Group.prototype.handleMousePressed = function (key, x, y, special) {
+        if (this.mouseIn) {
+            var n = this.mouseInElements.length,
+                current = null;
+                bubble = false;
+
+            for (var i = 0; i < n; ++i) {
+                current = this.mouseInElements[i];
+                if (current.handleClicked) {
+                    bubble = current.handleClicked(key, x, y, special);
+
+                    if (!bubble) {
+                        break;
+                    }
+                }
+            }
+
+            if (key === 37) {
+                if (current) {
+                    1
+                    
+                    this.giveFocus(current);
+                 
+            }
+
+            return false;
+        };
+
+        var n = this.entities.length,
+            current = null;
+
+        for (var i = 0; i < n; ++i) {
+            current = this.entities[i];
+
+            if (current.handleMousePressed) {
+                current.handleMousePressed(key, x, y, special);
+            }
+        }
+
+        return true;
+    };
+
+    this.Group.prototype.getElementsWithPoint = function (x, y) {
+        var result = [];
+
+        var n = this.entities.length,
+            point = new Point(x,y);
+
+        var current = null;
+        for (var i = 0; i < n; ++i) {
+            current = this.entities[i];
+
+            if (current.boundingRect().isPointInside(x, y)) {
+                if (current.isPointInside(point)) {
+                    result.push(current);
+                }
+            }
+        };
+
+        return result;
+    };
+
+    this.Group.prototype.handleMouseMoved = function (mouseX, mouseY) {
+        this.lastKnownMouseX = mouseX;
+        this.lastKnownMouseY = mouseY;
+    };
+
+    this.Group.prototype.handleMouse = function (mouseX, mouseY) {
+        if (this.rect.isPointInside(mouseX, mouseY)) {
+            if (!this.mouseIn) {
+                this.handleMouseEnter(mouseX, mouseY);
+            }
+
+            var nextElements = this.getElementsWithPoint(mouseX, mouseY),
+                n = this.mouseInElements.length,
+                current = null;
+
+            for (var i = 0; i < n; ++i) {
+                current = this.mouseInElements[i];
+                
+                if (!(current in nextElements)) {
+                    if (current.mouseIn) {
+                        if (current.handleMouseExit) {
+                            current.handleMouseExit();
+                        }
+                        current.mouseIn = false;
+                    }
+                }
+            }
+
+            n = nextElements.length,
+            current = null,
+            i = 0;
+
+            for (; i < n; ++i) {
+                current = nextElements[i];
+                if (!(current in this.mouseInElements)) {
+                    if (!current.mouseIn) {
+                        if (current.handleMouseEnter) {
+                            current.handleMouseEnter();
+                        }
+                        current.mouseIn = true;
+                    }
+                }
+            }
+
+            this.mouseInElements.length = 0;
+            this.mouseInElements = nextElements;
+        } else {
+            if (this.mouseIn) {
+                this.handleMouseExit(mouseX, mouseY);
+            }
+        }
+
+        // loop through entities and let them handle a mouse move
+        // even if the mouse is not within the group's region
+        var n = this.entities.length,
+            current = null,
+            i = 0;
+
+        for (; i < n; ++i) {
+            current = this.entities[i];
+
+            if (current.handleMouseMoved) {
+                // assert(this.mouseIn) is not always true
+                current.handleMouseMoved(mouseX, mouseY);
+            }
+
+            if (!this.mouseIn && current.mouseIn) {
+                if (current.handleMouseExit) {
+                    current.handleMouseExit();
+                }
+                current.mouseIn = false;
+            }
+        }
+    };
+
+    this.Group.prototype.handleMouseEnter = function (mouseX, mouseY) {
+        if (this.onMouseEnter) {
+            this.onMouseEnter(mouseX, mouseY);
+        };
+
+        this.mouseIn = true;
+    };
+
+    this.Group.prototype.handleMouseExit = function (mouseX, mouseY) {
+        if (this.onMouseExit) {
+            this.onMouseExit(mouseX, mouseY);
+        };
+        this.mouseIn = false;
+    };
+
 };
