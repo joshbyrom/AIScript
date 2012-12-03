@@ -34,7 +34,7 @@ addEvent(window, 'load', function () {
 
 This is commonly referred to as sandboxing. You can re-init, restart, and pause a simulation at anytime from within the Simulations module. You also have access to the rendering context at all times through the pInst object of the main script. However, the rendering context is passed to every simulations Draw method for convenience.
 
-Calling simulate() on another simulation while a simulation is in progress will cause a transition fire exit and enter methods on the simulation(s).
+Calling simulate() on another simulation while a simulation is in progress will cause a transition firing exit and enter methods on the simulation(s).
 
 Notes
 ------------------
