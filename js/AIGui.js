@@ -19,8 +19,8 @@ AIScript.modules.GUI = function (aiScript, modules) {
                 .addPoint(-1, 1)
                 .addPoint(-1, 0.55)
             );
-        this.entity.maxForce += 0.3;
-        this.entity.maxSpeed += 2;
+        this.entity.maxForce += 4;
+        this.entity.maxSpeed += 12;
     };
 
     this.Button.prototype.isPointInside = function (point) {
@@ -89,11 +89,6 @@ AIScript.modules.GUI = function (aiScript, modules) {
         processing.endShape(processing.CLOSE);
 
         this.drawText(processing);
-
-        var r = this.boundingRect();
-        processing.fill(0, 0, 0, 0);
-        processing.stroke(255, 0, 0);
-        processing.rect(r.left, r.top, r.width(), r.height());
     };
 
     this.Button.prototype.isPointInside = function (xy) {
@@ -124,7 +119,10 @@ AIScript.modules.GUI = function (aiScript, modules) {
     this.BoxLayout = function (x, y) {
         this.layoutPosition = new Point(x, y);
 
+        this.setNotSeek = true;
+
         this.maxWidth = 0;
+        this.maxHeight = 0;
         this.direction = 'vertical';
         this.align = 'right';
 
@@ -146,7 +144,7 @@ AIScript.modules.GUI = function (aiScript, modules) {
             n = ents.length;
 
         var bounds = null,
-            mod = 0;
+            mod = (this.direction === 'vertical' ? this.layoutPosition.y : this.layoutPosition.x);
 
         var targetFn = null;
 
@@ -164,40 +162,74 @@ AIScript.modules.GUI = function (aiScript, modules) {
             bounds = current.boundingRect();
 
             var w = bounds.width(),
-                h = bounds.height();
+                h = bounds.height(),
+                numLines = 1;
 
             if (w > this.maxWidth) {
                 this.maxWidth = w;
             }
+
+            if (h > this.maxHeight) {
+                this.maxHeight = h;
+            }
             
             targetFn = function (m, b, a, w) {
                 return function () {
-                    var p = new Point(this.layoutPosition.x + (this.direction === 'vertical' ? 0 : m),
-                                      this.layoutPosition.y + (this.direction === 'vertical' ? m : 0));
+                    var p = new Point((this.direction === 'vertical' ? this.layoutPosition.x : m),
+                                      (this.direction === 'vertical' ? m : this.layoutPosition.y));
 
-                    if (a === 'left') {
+                    if (this.direction === 'horizontal') {
+                        if (m + b.width() > aiScript.pInst.width) {
+                            numLines += 1;
+                            p.x = this.layoutPosition.x;
+                        }
+
+                        p.y = this.layoutPosition.y + 30 * numLines;
+                    }
+
+                    if (a === 'left' || this.direction === 'horizontal') {
                         p.x += b.width() * 0.5;
-                    } else if (a === 'right') {
+                    } else if (a === 'right' && this.direction === 'vertical') {
                         p.x += (w - b.width()) * 0.5;
                     }
-                    
+                  
+
                     return p;
                 }.bind(this);
             }.apply(this, [mod, bounds, this.align, this.maxWidth]);
 
-            current.idleBehavior = new Arrive(current.propertyAsFunction('position'), targetFn, current.propertyAsFunction('maxForce'));
-            mod += (this.direction === 'vertical' ? h : w) + 10;
-
-            if (this.direction === 'vertical') {
-                this.layoutPosition.x = Math.min(this.layoutPosition.x, aiScript.pInst.width - this.maxWidth * (this.align === 'left' ? 1 : 0.5) - 10);
-                this.layoutPosition.x = Math.max(this.layoutPosition.x, (this.align === 'left' ? 10 : this.maxWidth * 0.5 + 10));
+            if (this.setNotSeek) {
+                setTimeout(function (e, fn) {
+                    return function () {
+                        e.position = fn();
+                    }.bind(this);
+                }.apply(this, [current, targetFn]), 15);
+            } else {
+                var behavior = new Arrive(current.propertyAsFunction('position'), targetFn, current.propertyAsFunction('maxForce'));
+                behavior.slowdownRate = 260.0;
+                behavior.slowdownRadius = 200.0;
+                current.idleBehavior = behavior;
             }
 
-            var r = this.boundingRect();
-            aiScript.pInst.resetMatrix();
-            aiScript.pInst.fill(0, 0, 0, 0);
-            aiScript.pInst.stroke(255, 255, 0);
-            aiScript.pInst.rect(r.left, r.top, r.width(), r.height());
+            mod = (this.direction === 'vertical' ? bounds.bottom + h * 0.5: bounds.right) + 2;
+        }
+
+        if (this.direction === 'vertical') {
+            this.layoutPosition.x = Math.min(this.layoutPosition.x, aiScript.pInst.width - this.maxWidth * (this.align === 'left' ? 1 : 0.5));
+            this.layoutPosition.x = Math.max(this.layoutPosition.x, (this.align === 'left' ? 0 : this.maxWidth * 0.5));
+        } else {
+            this.layoutPosition.x = Math.min(this.layoutPosition.x, aiScript.pInst.width - this.maxWidth - 10);
+            this.layoutPosition.x = Math.max(this.layoutPosition.x, 10);
+        }
+
+        var rect = this.boundingRect();
+        var overHeight = rect.bottom - aiScript.pInst.height;
+        if (overHeight > 0) {
+            this.layoutPosition.y -= 1;
+        }
+
+        if (rect.top < 0) {
+            this.layoutPosition.y += 1;
         }
     };
 };

@@ -492,12 +492,17 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         var buttonActions = {
             0 : {
-                    name : "Click me",
-                    fn : function (group) {
-                        return function () {
-                            
-                        }.bind(this);
-                    }
+                name : "Change Orientation",
+                fn : function (group) {
+                    return function () {
+                        if (group.direction === 'vertical') {
+                            group.direction = 'horizontal';
+                        } else if (group.direction === 'horizontal') {
+                            group.direction = 'vertical';
+                        }
+                        this.setText('Change Orientation [' + group.direction + ']', 14);
+                    }.bind(this);
+                }
             },
 
             1: {
@@ -534,17 +539,27 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             },
 
             4: {
-                name: "Click me",
+                name: "Move Up",
                 fn: function (group) {
                     return function () {
+                        group.layoutPosition.y -= 200;
+                    }.bind(this);
+                }
+            },
 
+            5: {
+                name: "Move Down",
+                fn: function (group) {
+                    return function () {
+                        group.layoutPosition.y += 200;
                     }.bind(this);
                 }
             }
         }
 
+
         var button;
-        for (var i = 0; i < 5; ++i) {
+        for (var i = 0; i < 6; ++i) {
             button = new Button(200, 200);
             button.setText(buttonActions[i].name, 14);
             button.onClick(buttonActions[i].fn.apply(button, [this.group]));
