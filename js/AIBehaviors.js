@@ -56,6 +56,8 @@
         this.slowdownRadius = 100.0;
         this.slowdownRate = 10.0;
         this.lastLinear = new Point();
+
+        this.accuracy = 1;
     };
 
     this.Arrive.prototype.update = function () {
@@ -63,7 +65,7 @@
         var desired = this.seek.linear();
 
         var magn = desired.magn();
-        if (magn > 5) { // TODO:: this should be entered elsewhere (5 = 5 pixels or "a very small distance")
+        if (magn > this.accuracy) {
             this.isFinished = false;
             if (magn < this.slowdownRadius) {
                 var x = desired.x / magn;
@@ -77,6 +79,7 @@
                 this.lastLinear = desired;
             }
         } else {
+            this.lastLinear = desired;
             this.isFinished = true;
             this.lastLinear.zero();
         }
@@ -147,6 +150,8 @@
         this.direction = direction || 1;
 
         this.arrive = new modules.Behaviors.Arrive(fromFn, this.getTarget.bind(this), forceFn);
+        this.arrive.accuracy = 3;
+
         this.currentBehavior = this.arrive;
         this.currentIndex = startingIndex || 0;
 

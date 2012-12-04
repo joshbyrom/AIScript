@@ -500,13 +500,17 @@ AIScript.modules.Space = function (aiScript, modules) {
 
             if (current.left < minX) {
                 minX = current.left;
-            } else if (current.right > maxX) {
+            }
+
+            if (current.right > maxX) {
                 maxX = current.right;
             }
 
             if (current.top < minY) {
                 minY = current.top;
-            } else if (current.bottom > maxY) {
+            }
+
+            if (current.bottom > maxY) {
                 maxY = current.bottom;
             }
 
@@ -516,6 +520,7 @@ AIScript.modules.Space = function (aiScript, modules) {
         this.right = maxX;
         this.top = minY;
         this.bottom = maxY;
+
     };
 
     this.Rectangle.prototype.update = function () {
@@ -634,8 +639,7 @@ AIScript.modules.Space = function (aiScript, modules) {
         var guardedXScale = xScale ? Math.abs(xScale) : 1,
             guardedYScale = yScale ? Math.abs(yScale) : xScale ? xScale : 1;
 
-        var rotation = this.points[0] ? this.points[0].angleTo(this.centroid()) : 0,
-            n = this.points.length, point = null;
+        var n = this.points.length, point = null;
 
         this.reset();
 
@@ -645,8 +649,6 @@ AIScript.modules.Space = function (aiScript, modules) {
             point.x *= guardedXScale;
             point.y *= guardedYScale;
         }
-
-        this.rotateAroundCentroid(rotation);
 
         return this;
     };

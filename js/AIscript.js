@@ -43,14 +43,17 @@
                  simulation === null)
             return;
 
-        if (this.simulation !== null) {
+        if (this.simulation && this.simulation.exit) {
             this.simulation.exit(simulation);
         }
 
         this.last = this.simulation;
         this.simulation = simulation;
 
-        this.simulation.enter(this.last);
+        if (this.simulation && this.simulation.enter) {
+            this.simulation.enter(this.last);
+        }
+
         if (this.paused && !('handleKeyPressed' in this.simulation &&
                              'handleMousePressed' in this.simulation)) {
             // no input to unpause with
@@ -90,6 +93,7 @@
                     if (!this.paused) {
                         this.simulation.update();
                     };
+
                     this.simulation.draw(processing);
                     if (this.paused) {
                         processing.fill(255, 255, 255, 51);
@@ -194,22 +198,8 @@ function addEvent(target, event, fnc) {
     }
 }
 
-AIScript.modules.Say = function Say (aiScript) {
-    this.say = "hello";
-    this.sayHello = function () {
-        return this.say;
-    }
-}
-
-AIScript.modules.Goodbye = function Goodbye(aiScript) {
-    this.say = "goodbye";
-    this.sayGoodbye = function () {
-        return this.say;
-    }
-}
-
 addEvent(window, 'load', function () {
-    window.aiScript = AIScript('Space', 'Entities', 'Behaviors', 'Simulations', function (box) {
+    window.aiScript = AIScript('Space', 'Entities', 'Behaviors', 'GUI', 'Simulations', function (box) {
         this.simulate(new box.Simulations.LineTestSimulation());
         this.start();
     });

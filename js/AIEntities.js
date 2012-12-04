@@ -24,11 +24,11 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.speed = 0;
 
         this.polygon = new Polygon();
-        this.polygon.clonePoints(polygon);
         this.scale = 1.0;
+        this.polygon.clonePoints(polygon, this.scale);
 
-        this.rotation = new Point(1.0, 0.0);    // rotation smoother ?
-        this.rotationTarget = new Point(1.0, 0.0);
+        this.rotation = new Point(1,0);    // rotation smoother ?
+        this.rotationTarget = new Point(1,0);
         this.maxTurnRate = 0.12;
 
         this.behaviors = [];
@@ -40,6 +40,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.idle = false;
         this.rotationIdle = false;
+        this.faceRotationOnIdle = true;
         this.idleBehavior = false;
 
         this.interupt = false;
@@ -201,7 +202,9 @@ AIScript.modules.Entities = function (aiScript, modules) {
         }
 
         if (now - this.timeSinceLastRotation > this.timeToIdle) {
-            this.rotationTarget = this.forward().add(this.position);
+            if (this.faceRotationOnIdle) {
+                this.rotationTarget = this.forward().add(this.position);
+            }
             this.rotationIdle = true;
         };
     };
@@ -252,7 +255,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Entity.prototype.calculateRotation = function () {
-        if (this.rotationTarget.almostEquals(this.position)) {
+        if (this.rotationTarget.almostEquals(this.position) ||
+            this.rotation.almostEquals(this.rotationTarget)) {
             return;
         }
 
@@ -302,6 +306,11 @@ AIScript.modules.Entities = function (aiScript, modules) {
         var global = new Polygon().clonePoints(this.polygon, this.scale).translate(this.position);
         return global.isPointInside(point);
     };
+
+    this.Entity.prototype.center = function () {
+        var global = new Polygon().clonePoints(this.polygon, this.scale).translate(this.position);
+        return global.centroid();
+    }
 
     // Groups
 
@@ -353,7 +362,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
     };
 
     this.Group.prototype.update = function () {
-        var entity = null,
+        var entity = null, p = aiScript.pInst;
             n = this.entities.length;
 
         var rects = [];
@@ -362,6 +371,10 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
             if ('update' in entity) {
                 entity.update();
+            }
+
+            if ('draw' in entity) {
+                entity.draw(p);
             }
 
             rects.push(entity.boundingRect());
@@ -388,7 +401,7 @@ AIScript.modules.Entities = function (aiScript, modules) {
             for (var i = 0; i < n; ++i) {
                 current = this.mouseInElements[i];
                 if (current.handleClicked) {
-                    bubble = current.handleClicked(key, x, y, special);
+                    bubble = current.handleClicked(key, x, y, special) || true;
 
                     if (!bubble) {
                         break;
@@ -398,10 +411,8 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
             if (key === 37) {
                 if (current) {
-                    1
-                    
                     this.giveFocus(current);
-                 
+                }
             }
 
             return false;

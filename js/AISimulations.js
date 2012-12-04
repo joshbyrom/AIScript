@@ -9,6 +9,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Seek = modules.Behaviors.Seek;
     var Arrive = modules.Behaviors.Arrive;
 
+    var Button = modules.GUI.Button;
+
     this.LineTestSimulation = function () {
 
     };
@@ -274,11 +276,6 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         this.group = new Group();
         
-        var poly = new Polygon();
-        poly.addPoint(1, 1);
-        poly.addPoint(1, -1);
-        poly.addPoint(-1, -1);
-        poly.addPoint(-1, 1);
 
         var poly2 = new Polygon();
         poly2.addPoint(1, 1);
@@ -353,7 +350,9 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             this.group.focused.addBehavior(behavior);
         } else if (button === 39) {
             this.lastRightMouseTarget = new Point(x, y);
-            this.group.focused.facePoint(this.lastRightMouseTarget);
+            if (this.group.focused) {
+                this.group.focused.facePoint(this.lastRightMouseTarget);
+            }
         }
     };
 
@@ -388,6 +387,8 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.drawGroup(processing, this.group);
 
         processing.fill(255, 255, 255, 51);
+        processing.textAlign(processing.LEFT);
+        processing.textSize(11);
 
         for (var i = 0; i < 4; ++i) {
             processing.text(this.instructions, 12 + Math.random() * 8, 56 + Math.random() * 8);
@@ -479,5 +480,86 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         }
 
         processing.endShape(processing.CLOSE);
+    };
+
+
+    this.InputSimulation = function InputSimulation() {
+
+    };
+
+    this.InputSimulation.prototype.enter = function (last) {
+        this.group = new modules.GUI.BoxLayout(670, 280);
+
+        var buttonActions = {
+            0 : {
+                    name : "Click me",
+                    fn : function (group) {
+                        return function () {
+                            
+                        }.bind(this);
+                    }
+            },
+
+            1: {
+                name: "Change Alignment",
+                fn: function (group) {
+                    return function () {
+                        if (group.align === 'left') {
+                            group.align = 'right';
+                        } else if (group.align === 'right') {
+                            group.align = 'left';
+                        }
+
+                        this.setText('Change Alignment [' + group.align + ']', 14); 
+                    }.bind(this);
+                }
+            },
+
+            2: {
+                name: "Move Left",
+                fn: function (group) {
+                    return function () {
+                        group.layoutPosition.x -= 200;
+                    }.bind(this);
+                }
+            },
+
+            3: {
+                name: "Move Right",
+                fn: function (group) {
+                    return function () {
+                        group.layoutPosition.x += 200;
+                    }.bind(this);
+                }
+            },
+
+            4: {
+                name: "Click me",
+                fn: function (group) {
+                    return function () {
+
+                    }.bind(this);
+                }
+            }
+        }
+
+        var button;
+        for (var i = 0; i < 5; ++i) {
+            button = new Button(200, 200);
+            button.setText(buttonActions[i].name, 14);
+            button.onClick(buttonActions[i].fn.apply(button, [this.group]));
+            this.group.addEntity(button);
+        }
+
+        this.handleMousePressed = this.group.handleMousePressed.bind(this.group);
+        this.handleMouseMoved = this.group.handleMouseMoved.bind(this.group);
+    };
+
+    this.InputSimulation.prototype.update = function () {
+        this.group.update();
+    };
+
+    this.InputSimulation.prototype.draw = function (processing) {
+
     };
 };
