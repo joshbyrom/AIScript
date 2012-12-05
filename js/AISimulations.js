@@ -488,7 +488,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.InputSimulation.prototype.enter = function (last) {
-        this.group = new modules.GUI.BoxLayout(670, 280);
+        this.group = new modules.GUI.BoxLayout(aiScript.pInst.width, aiScript.pInst.height);
 
         var buttonActions = {
             0 : {
@@ -560,7 +560,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         var button;
         for (var i = 0; i < 6; ++i) {
-            button = new Button(200, 200);
+            button = new Button(aiScript.pInst.width, aiScript.pInst.height);
             button.setText(buttonActions[i].name, 14);
             button.onClick(buttonActions[i].fn.apply(button, [this.group]));
             this.group.addEntity(button);
@@ -572,6 +572,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
     this.InputSimulation.prototype.update = function () {
         this.group.update();
+        this.group.clampToScreen();
     };
 
     this.InputSimulation.prototype.draw = function (processing) {

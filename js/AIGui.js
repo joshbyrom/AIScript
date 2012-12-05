@@ -6,6 +6,7 @@ AIScript.modules.GUI = function (aiScript, modules) {
     var Group = modules.Entities.Group;
 
     var Arrive = modules.Behaviors.Arrive;
+    var LSeek = modules.Behaviors.LerpingSeek;
 
     this.Button = function Button(x, y) {
         this._text = null;
@@ -19,8 +20,9 @@ AIScript.modules.GUI = function (aiScript, modules) {
                 .addPoint(-1, 1)
                 .addPoint(-1, 0.55)
             );
-        this.entity.maxForce += 4;
-        this.entity.maxSpeed += 12;
+
+        this.entity.friction = 0.0;
+        this.entity.faceRotationOnIdle = false;
     };
 
     this.Button.prototype.isPointInside = function (point) {
@@ -119,8 +121,6 @@ AIScript.modules.GUI = function (aiScript, modules) {
     this.BoxLayout = function (x, y) {
         this.layoutPosition = new Point(x, y);
 
-        this.setNotSeek = true;
-
         this.maxWidth = 0;
         this.maxHeight = 0;
         this.direction = 'vertical';
@@ -141,10 +141,14 @@ AIScript.modules.GUI = function (aiScript, modules) {
 
         var ents = this.group.entities,
             current = null,
-            n = ents.length;
+            n = ents.length,
+            point = null;
 
         var bounds = null,
+            numLines = 1,
             mod = (this.direction === 'vertical' ? this.layoutPosition.y : this.layoutPosition.x);
+
+        this.totalHeight = 0;
 
         var targetFn = null;
 
@@ -155,15 +159,10 @@ AIScript.modules.GUI = function (aiScript, modules) {
                 current = current.entity;
             }
 
-            if (current.faceRotationOnIdle) {
-                current.faceRotationOnIdle = false;
-            }
-
             bounds = current.boundingRect();
 
             var w = bounds.width(),
-                h = bounds.height(),
-                numLines = 1;
+                h = bounds.height();
 
             if (w > this.maxWidth) {
                 this.maxWidth = w;
@@ -172,48 +171,50 @@ AIScript.modules.GUI = function (aiScript, modules) {
             if (h > this.maxHeight) {
                 this.maxHeight = h;
             }
+
+            if (this.direction === 'vertical') {
+                this.totalHeight += h;
+            } 
             
-            targetFn = function (m, b, a, w) {
-                return function () {
-                    var p = new Point((this.direction === 'vertical' ? this.layoutPosition.x : m),
-                                      (this.direction === 'vertical' ? m : this.layoutPosition.y));
+            point = new Point((this.direction === 'vertical' ? this.layoutPosition.x : mod),
+                                (this.direction === 'vertical' ? mod : this.layoutPosition.y));
 
-                    if (this.direction === 'horizontal') {
-                        if (m + b.width() > aiScript.pInst.width) {
-                            numLines += 1;
-                            p.x = this.layoutPosition.x;
-                        }
+            if (this.direction === 'horizontal') {
+                if (mod + w> aiScript.pInst.width) {
+                    numLines += 1;
+                    this.totalHeight += this.maxHeight;
+                    this.maxHeight = 0;
 
-                        p.y = this.layoutPosition.y + 30 * numLines;
-                    }
+                    point.x = this.layoutPosition.x;
+                }
 
-                    if (a === 'left' || this.direction === 'horizontal') {
-                        p.x += b.width() * 0.5;
-                    } else if (a === 'right' && this.direction === 'vertical') {
-                        p.x += (w - b.width()) * 0.5;
-                    }
-                  
+                point.y = this.layoutPosition.y + h * numLines;
+            }
 
-                    return p;
-                }.bind(this);
-            }.apply(this, [mod, bounds, this.align, this.maxWidth]);
+            if (this.align === 'left' || this.direction === 'horizontal') {
+                point.x += w * 0.5;
+            } else if (this.align === 'right' && this.direction === 'vertical') {
+                point.x += (this.maxWidth - w) * 0.5;
+            }
 
-            if (this.setNotSeek) {
-                setTimeout(function (e, fn) {
-                    return function () {
-                        e.position = fn();
-                    }.bind(this);
-                }.apply(this, [current, targetFn]), 15);
+            if (current.idleBehavior && current.idleBehavior.to.almostEquals(point)) {
+                
             } else {
-                var behavior = new Arrive(current.propertyAsFunction('position'), targetFn, current.propertyAsFunction('maxForce'));
-                behavior.slowdownRate = 260.0;
-                behavior.slowdownRadius = 200.0;
+                var behavior = new LSeek(current.position, point, 100);
+                behavior.directSet = true;
                 current.idleBehavior = behavior;
             }
+            
 
             mod = (this.direction === 'vertical' ? bounds.bottom + h * 0.5: bounds.right) + 2;
         }
 
+        if (this.direction === 'horizontal') {
+            this.totalHeight += this.maxHeight;
+        }
+    };
+
+    this.BoxLayout.prototype.clampToScreen = function() {
         if (this.direction === 'vertical') {
             this.layoutPosition.x = Math.min(this.layoutPosition.x, aiScript.pInst.width - this.maxWidth * (this.align === 'left' ? 1 : 0.5));
             this.layoutPosition.x = Math.max(this.layoutPosition.x, (this.align === 'left' ? 0 : this.maxWidth * 0.5));
@@ -222,14 +223,15 @@ AIScript.modules.GUI = function (aiScript, modules) {
             this.layoutPosition.x = Math.max(this.layoutPosition.x, 10);
         }
 
-        var rect = this.boundingRect();
-        var overHeight = rect.bottom - aiScript.pInst.height;
-        if (overHeight > 0) {
-            this.layoutPosition.y -= 1;
+
+        //console.log(this.totalHeight);
+        if (this.layoutPosition.y + this.totalHeight > aiScript.pInst.height) {
+            this.layoutPosition.y = aiScript.pInst.height - this.totalHeight;
         }
 
-        if (rect.top < 0) {
-            this.layoutPosition.y += 1;
+        var minY = (this.direction === 'vertical' ? 0.5 * this.maxHeight : -0.5 * this.maxHeight);
+        if (this.layoutPosition.y < minY) {
+            this.layoutPosition.y = minY;
         }
     };
 };

@@ -1,6 +1,6 @@
 ﻿AIScript.modules.Behaviors = function (aiScript, modules) {
     var Point = modules.Space.Point;
-
+    
     this.Seek = function Seek(fromFn, targetFn) {
         this.from = fromFn;
         this.to = targetFn;
@@ -45,6 +45,46 @@
 
     this.Seek.prototype.linear = function () {
         return this.lastLinear;
+    };
+
+    this.LerpingSeek = function LerpingSeek(from, to, timeToTarget) {
+        this.from = new Point(from.x, from.y);
+        this.to = new Point(to.x, to.y);
+
+        this.timeToTarget = Math.max(timeToTarget, 0.0001);
+        this.timeStarted = false;
+        this.timeToStop = false;
+
+        this.timeElapsed = 0;
+        this.t = 0;
+    };
+
+    this.LerpingSeek.prototype.update = function () {
+        var now = aiScript.pInst.millis();
+
+        if (!this.timeStarted) {
+            this.timeStarted = now;
+            this.timeToStop = this.timeStarted + this.timeToTarget;
+            return;
+        }
+
+        this.timeElapsed = now - this.timeStarted;
+        this.t = this.timeElapsed / this.timeToTarget;
+    };
+
+    this.LerpingSeek.prototype.finished = function () {
+        return this.t > 1.0;
+    };
+
+    this.LerpingSeek.prototype.linear = function () {
+        var lerp = aiScript.pInst.lerp,
+            t = Math.min(this.t, 1.0);
+
+        var x = lerp(this.from.x, this.to.x, t),
+            y = lerp(this.from.y, this.to.y, t),
+            result = new Point(x, y);
+
+        return result;
     };
 
     // arrive

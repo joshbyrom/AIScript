@@ -244,7 +244,12 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         if ('linear' in behavior) {
             var linear = behavior.linear();
-            this.applyForce(linear.x, linear.y);
+            if (!behavior.directSet) {
+                this.applyForce(linear.x, linear.y);
+            } else {
+                this.position.x = linear.x;
+                this.position.y = linear.y;
+            }
         }
 
         if ('rotation' in behavior) {
