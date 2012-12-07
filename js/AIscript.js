@@ -199,7 +199,7 @@ function addEvent(target, event, fnc) {
 }
 
 
-//->[PACK-HERE]<-\\
+//->PACK-HERE<-\\
 
 addEvent(window, 'load', function () {
     window.aiScript = AIScript('Space', 'Entities', 'Behaviors', 'GUI', 'Simulations', function (box) {
