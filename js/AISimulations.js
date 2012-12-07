@@ -516,7 +516,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
                         }
 
                         this.setText('Change Alignment [' + group.align + ']', 14); 
-                    }.bind(this);
+                    }.bind(this);+2653147
                 }
             },
 
@@ -524,6 +524,10 @@ AIScript.modules.Simulations = function (aiScript, modules) {
                 name: "Move Left",
                 fn: function (group) {
                     return function () {
+                        if (group.layoutPosition.x - 200 <= 0) {
+                            group.align = 'left';
+                            group.elemAt(1).setText('Change Alignment [' + group.align + ']', 14);
+                        };
                         group.layoutPosition.x -= 200;
                     }.bind(this);
                 }
@@ -533,6 +537,10 @@ AIScript.modules.Simulations = function (aiScript, modules) {
                 name: "Move Right",
                 fn: function (group) {
                     return function () {
+                        if (group.boundingRect().right + 200 > aiScript.pInst.width && group.direction === 'vertical') {
+                            group.align = 'right';
+                            group.elemAt(1).setText('Change Alignment [' + group.align + ']', 14);
+                        };
                         group.layoutPosition.x += 200;
                     }.bind(this);
                 }
@@ -560,7 +568,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         var button;
         for (var i = 0; i < 6; ++i) {
-            button = new Button(aiScript.pInst.width, aiScript.pInst.height);
+            button = new Button(aiScript.pInst.width + 120, aiScript.pInst.height);
             button.setText(buttonActions[i].name, 14);
             button.onClick(buttonActions[i].fn.apply(button, [this.group]));
             this.group.addEntity(button);

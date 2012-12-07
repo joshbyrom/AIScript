@@ -46,6 +46,13 @@ AIScript.modules.Entities = function (aiScript, modules) {
         this.interupt = false;
     };
 
+    this.Entity.prototype.makeIdle = function () {
+        if (aiScript.pInst) {
+            var now = aiScript.pInst.millis();
+            this.timeSinceLastBehavior = now - (this.timeToIdle + 1);
+        }
+    };
+
     this.Entity.prototype.boundingRect = function () {
         return new Rectangle()
                  .copy(this.polygon.boundingRect())
@@ -331,6 +338,23 @@ AIScript.modules.Entities = function (aiScript, modules) {
 
         this.lastKnownMouseX = 0;
         this.lastKnownMouseY = 0;
+    };
+
+    this.Group.prototype.facade = function (facade) {
+        facade.group = this;
+        facade.addEntity = this.addEntity.bind(this);
+        facade.removeEntity = this.removeEntity.bind(this);
+        facade.handleMousePressed = this.handleMousePressed.bind(this);
+        facade.handleMouseMoved = this.handleMouseMoved.bind(this);
+        facade.handleMouseEnter = this.handleMouseEnter.bind(this);
+        facade.handleMouseExit = this.handleMouseExit.bind(this);
+        facade.boundingRect = this.boundingRect.bind(this);
+        facade.elemAt = this.elemAt.bind(this);
+        return this;
+    };
+
+    this.Group.prototype.elemAt = function (i) {
+        return this.entities[i];
     };
 
     this.Group.prototype.giveFocus = function (entity) {

@@ -8,11 +8,11 @@ AIScript.modules.GUI = function (aiScript, modules) {
     var Arrive = modules.Behaviors.Arrive;
     var LSeek = modules.Behaviors.LerpingSeek;
 
-    this.Button = function Button(x, y) {
+    this.Button = function Button(x, y, entity) {
         this._text = null;
         this._textGraphics = null;
 
-        this.entity = new Entity(x, y,
+        this.entity = entity || new Entity(x, y,
             new Polygon()
                 .addPoint(-0.75, -1)
                 .addPoint(1, -1)
@@ -23,6 +23,7 @@ AIScript.modules.GUI = function (aiScript, modules) {
 
         this.entity.friction = 0.0;
         this.entity.faceRotationOnIdle = false;
+        this.entity.makeIdle();
     };
 
     this.Button.prototype.isPointInside = function (point) {
@@ -134,6 +135,7 @@ AIScript.modules.GUI = function (aiScript, modules) {
         this.handleMouseEnter = this.group.handleMouseEnter.bind(this.group);
         this.handleMouseExit = this.group.handleMouseExit.bind(this.group);
         this.boundingRect = this.group.boundingRect.bind(this.group);
+        this.elemAt = this.group.elemAt.bind(this.group);
     };
 
     this.BoxLayout.prototype.update = function () {
@@ -216,7 +218,7 @@ AIScript.modules.GUI = function (aiScript, modules) {
 
     this.BoxLayout.prototype.clampToScreen = function() {
         if (this.direction === 'vertical') {
-            this.layoutPosition.x = Math.min(this.layoutPosition.x, aiScript.pInst.width - this.maxWidth * (this.align === 'left' ? 1 : 0.5));
+            this.layoutPosition.x = Math.min(this.layoutPosition.x, aiScript.pInst.width - (this.align === 'left' ? this.boundingRect().width() : this.maxWidth * 0.5));
             this.layoutPosition.x = Math.max(this.layoutPosition.x, (this.align === 'left' ? 0 : this.maxWidth * 0.5));
         } else {
             this.layoutPosition.x = Math.min(this.layoutPosition.x, aiScript.pInst.width - this.maxWidth - 10);
