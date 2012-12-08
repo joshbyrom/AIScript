@@ -890,4 +890,122 @@ AIScript.modules.Space = function (aiScript, modules) {
                                            minY - (padding || 0),
                                            maxY + (padding || 0));
     };
+
+    // partitioning and grids
+    this.Grid = function (x, y, width, height) {
+        this.position = new modules.Space.Point(x, y);
+
+        this.width = width;
+        this.height = height;
+
+        this.numberOfColumns = 1;
+        this.numberOfRows = 1;
+
+        this.groups = [];
+        this.backup = [];
+
+        this.init();
+    };
+
+    this.Grid.prototype._toIndex = function (column, row) {
+        return column * this.numberOfRows - row;
+    };
+
+    this.Grid.prototype._atIndex = function (column, row) {
+        var index = this.groups.toIndex(column, row);
+        return this.groups[index];
+    }
+
+    this.Grid.prototype.init = function () {
+        if (this.width < 0) {
+            this.width = 0;
+        }
+
+        if (this.height < 0) {
+            this.height = 0;
+        }
+
+        this.columnWidth = this.width / Math.max(this.numberOfColumns, 0.0001);
+        this.rowHeight = this.height / Math.max(this.numberOfRows, 0.00001);
+
+        this.backup();
+        this.groups.length = 0;
+
+        var index, group = 0;
+        for (var i = 0; i < this.numberOfColumns; ++i) {
+            for (var k = 0; k < this.numberOfRows; ++k) {
+                index = this._toIndex(i, k);
+                group = this.indexInBackup(i, k);
+
+                if (!group) {
+                    group = new Group();
+                }
+
+                this.groups[index] = group;
+            }
+        }
+
+        this.backup.forEach(function (group) {
+            group.entities.forEach(function (entity) {
+                this.handleObject(entity);
+            }.bind(this));
+        }.bind(this));
+    };
+
+    this.Grid.prototype.update = function (now) {
+        this.groups.forEach(function (entry) {
+            entry.update();
+        });
+
+
+    };
+
+    this.Grid.prototype.handleObject = function (entity) {
+        var translation = this.coordsToIndex(entity.position.x, entity.position.y);
+        var group = this._atIndex(translation.column, translation.row);
+
+        if (group.entities.indexOf(entity) < 0) {
+            group.addEntity(entity);
+        }
+    };
+
+    this.Grid.prototype.backup = function () {
+        var n = this.groups.length;
+
+        if (n > this.backup.length) {
+            this.backup.length = n;
+        };
+
+        for (var i = 0; i < n; ++i) {
+            this.backup[i] = this.groups[i];
+        }
+    };
+
+    this.Grid.prototype._indexInBackup = function (index) {
+        if (index in this.backup) {
+            return this.backup[index];
+        } else {
+            return false;
+        }
+    };
+
+    this.Grid.prototype.coordsToIndex = function (x, y) {
+        var result = {
+            column: x / Math.min(this.columnWidth, 0.0001),
+            row: y / Math.min(this.rowHeight, 0.0001)
+        };
+
+        return result;
+    };
+
+    this.Grid.prototype.get = function (column, row) {
+        var gColumn = column % this.numberOfColumns;
+        var gRow = row % this.numberOfRows;
+
+        gColumn += gColumn < 0 ? this.numberOfColumns : 0;
+        gRow += gRow < 0 ? this.numberOfRows : 0;
+
+        var index = this._toIndex(gColumn, gRow);
+        return this.groups[index];
+    };
 };
