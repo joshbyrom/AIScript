@@ -11,6 +11,11 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
     var Button = modules.GUI.Button;
 
+    var LSystem = modules.DevelopmentalSystems.LSystem;
+    var Alphabet = modules.DevelopmentalSystems.Alphabet;
+    var Axiom = modules.DevelopmentalSystems.Axiom;
+    var Rule = modules.DevelopmentalSystems.ProductionRule;
+
     this.LineTestSimulation = function () {
 
     };
@@ -584,6 +589,41 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     };
 
     this.InputSimulation.prototype.draw = function (processing) {
+
+    };
+
+    this.LSystemSimulation = function () {
+
+    };
+
+    this.LSystemSimulation.prototype.enter = function (last) {
+        this.axiom = new Axiom('dl');
+        this.alphabet = new Alphabet('gr', 'gl', 'dr', 'dl');
+
+        // test all forms of rule construction
+        this.rules = [
+            new Rule('dr -> dl, gr'),
+            new Rule('dl', ['gl', 'dr']),
+            new Rule('gr -> dr'),
+            new Rule('gl', 'dl')
+        ];
+
+        if (!(this.alphabet.validateRules(this.rules))) {
+            console.log('LSystemSimulation -- some rules contain characters not in the alphabet');
+        }
+
+        this.lSystem = new LSystem(this.alphabet, this.axiom, this.rules);
+
+        for (var i = 0; i < 4; ++i) {
+            console.log('t = ', i, ' =', this.lSystem.word(i));
+        }
+    };
+
+    this.LSystemSimulation.prototype.update = function () {
+
+    };
+
+    this.LSystemSimulation.prototype.draw = function (g) {
 
     };
 };

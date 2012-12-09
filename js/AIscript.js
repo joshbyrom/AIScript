@@ -202,7 +202,7 @@ function addEvent(target, event, fnc) {
 //->PACK-HERE<-\\
 
 addEvent(window, 'load', function () {
-    window.aiScript = AIScript('Space', 'Entities', 'Behaviors', 'GUI', 'Simulations', function (box) {
+    window.aiScript = AIScript('Space', 'Entities', 'Behaviors', 'GUI', 'DevelopmentalSystems', 'Simulations', function (box) {
         this.simulate(new box.Simulations.LineTestSimulation());
         this.start();
     });

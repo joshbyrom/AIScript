@@ -12,6 +12,7 @@
     <script type="text/javascript" src="../js/AIEntities.js"></script>
     <script type="text/javascript" src="../js/AIBehaviors.js"></script>
     <script type="text/javascript" src="../js/AIGui.js"></script>
+    <script type="text/javascript" src="../js/AIDevelopmentalSystems.js"></script>
     <script type="text/javascript" src="../js/AISimulations.js"></script>
     <script type="text/javascript">
         var runLineSim = function () {
@@ -29,6 +30,10 @@
         var runInputSim = function () {
             window.aiScript.simulate(new AIScript.modules.Simulations.InputSimulation());
         };
+
+        var runLSim = function () {
+            window.aiScript.simulate(new AIScript.modules.Simulations.LSystemSimulation());
+        };
     </script>
 </head>
 <body>
@@ -40,6 +45,7 @@
                 <li onclick="runPolySim();">Run Polygon Simulation</li>
                 <li onclick="runEntSim();">Run Entity Simulation</li>
                 <li onclick="runInputSim();">Run Button + Layout Simulation</li>
+                <li onclick="runLSim();">Run LSystem Simulation</li>
             </ul>
         </div>
         <canvas id="Main" width="800" height="450"></canvas>
