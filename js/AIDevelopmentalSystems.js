@@ -144,7 +144,7 @@
 
     this.Turtle = function () {
         this.position = new Point();
-        this.heading = new Point(1, 0);
+        this.heading = false;
 
         this.instructions = {};
 
@@ -162,14 +162,15 @@
         this.instructions[symbol] = action;
     };
 
-    this.Turtle.prototype.start = function (word, point) {
+    this.Turtle.prototype.start = function (word, point, heading) {
         this.word = word;
         this.currentActionIndex = 0;
         this.currentActionTime = 0;
         this.lastUpdateTime = false;
         this.currentAction = false;
 
-        this.position = point;
+        this.position = point || this.position;
+        this.heading = heading || this.heading || new Point(1, 0);
     };
 
     this.Turtle.prototype.update = function () {
@@ -221,8 +222,8 @@
         this.currentAction = false;
     };
 
-    this.MoveForwardAction = function(distance, time) {
-        return (function MoveForwardDist(distance, time) {
+    this.MoveForwardAction = function(distance, time, draw) {
+        return (function MoveForwardDist(distance, time, draw) {
             var action = function() {
                 
             };
@@ -248,12 +249,16 @@
                 if (current) {
                     g.fill(255, 255, 255);
                     g.ellipse(turtle.position.x, turtle.position.y, 5, 5);
-                    g.line(this.initial.x, this.initial.y, turtle.position.x, turtle.position.y);
+                    if (draw) {
+                        g.line(this.initial.x, this.initial.y, turtle.position.x, turtle.position.y);
+                    }
                 } else {
-                    g.fill(0, 0, 255);
-                    g.line(this.initial.x, this.initial.y, this.target.x, this.target.y);
-                    g.ellipse(this.initial.x, this.initial.y, 5, 5);
-                    g.ellipse(this.target.x, this.target.y, 5, 5);
+                    if (draw) {
+                        g.fill(0, 0, 255);
+                        g.line(this.initial.x, this.initial.y, this.target.x, this.target.y);
+                        g.ellipse(this.initial.x, this.initial.y, 5, 5);
+                        g.ellipse(this.target.x, this.target.y, 5, 5);
+                    }
                 }
             };
 
@@ -262,7 +267,7 @@
             };
 
            return action;
-        })(distance, time);
+        })(distance, time, draw === undefined ? true : draw);
     };
 
     this.RotateAction = function (angle) {
@@ -274,12 +279,7 @@
             action.prototype.enter = function (turtle) {
                 this.initial = turtle.position.clone();
 
-                console.log(this.initial.angleTo(this.initial.clone().add(new Point(0, 1))));
-
-                this.angleIndicator = new Point(50, 0).rotate(1.57);
-                
-                console.log(this.initial.angleTo(this.angleIndicator));
-                console.log(this.angleIndicator);
+                turtle.heading.rotate(angle).norm();
             };
 
             action.prototype.update = function (turtle, elapsed, lerp) {
@@ -287,8 +287,8 @@
             };
 
             action.prototype.draw = function (turtle, g, current) {
-                g.fill(255, 0, 0);
-                g.ellipse(this.angleIndicator.x, this.angleIndicator.y, 5, 5);
+                
+
             };
 
             action.prototype.exit = function (turtle) {

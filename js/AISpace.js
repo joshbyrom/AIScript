@@ -138,7 +138,7 @@ AIScript.modules.Space = function (aiScript, modules) {
         return this.rotated(theta).norm();
     };
 
-    // unlike rotate, this return a rotated version and does not rotate in place
+    // unlike rotate, this returns a rotated version and does not rotate in place
     this.Point.prototype.rotated = function (theta) {
         var _theta = theta % TwoPi;
         var ret = new modules.Space.Point(0, 0);

@@ -622,10 +622,11 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.turtle = new Turtle();
 
         this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(30, 1000));
-        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(-Math.PI));
+        this.turtle.addInstruction('f', new modules.DevelopmentalSystems.MoveForwardAction(30, 200, false));
+        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(-1.57));
         this.turtle.addInstruction('+', new modules.DevelopmentalSystems.RotateAction(1.57));
 
-        this.turtle.start(['F', 'F', '+', 'F'], new Point(100, 200));
+        this.turtle.start(['F', 'F', '-', 'F', 'F', 'F', '-', 'F', '-', 'F', 'F', '+', 'F', '-', 'F', '+', 'f', 'f', 'F', '+', 'F', 'F', 'F', '+', 'F', '+', 'F', 'F', 'F'], new Point(100, 200));
     };
 
     this.LSystemSimulation.prototype.update = function () {
