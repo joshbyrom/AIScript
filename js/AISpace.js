@@ -113,8 +113,10 @@ AIScript.modules.Space = function (aiScript, modules) {
         var cos = Math.cos(_theta);
         var sin = Math.sin(_theta);
 
+        var oldX = this.x;
+
         this.x = this.x * cos - sin * this.y;
-        this.y = this.x * sin + cos * this.y;
+        this.y = oldX * sin + cos * this.y;
         return this;
     };
 

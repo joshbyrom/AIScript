@@ -1,4 +1,6 @@
 ﻿AIScript.modules.DevelopmentalSystems = function (aiScript, modules) {
+    var Point = modules.Space.Point;
+
     this.Alphabet = function () {
         this.symbols = Array.prototype.slice.call(arguments);
         this.symbols = (this.symbols[0] && Array.isArray(this.symbols[0]) ? this.symbols[0] : this.symbols);
@@ -140,13 +142,160 @@
         return next;
     };
 
-    this.Turtle = function (position, lsystem, graphics) {
-        this.system = lsystem;
-        this.graphics = graphics;
+    this.Turtle = function () {
+        this.position = new Point();
+        this.heading = new Point(1, 0);
 
-        this.position = position;
-        this.heading = new Point();
-        this.l = new Point(-1, 0);
-        this.u = new Point(0, 1);
+        this.instructions = {};
+
+        this.word = false;
+        this.currentAction = false;
+        this.currentActionIndex = 0;
+        this.currentActionTime = 0;
+
+        this.lastUpdateTime = false;
+
+        this.actionHistory = [];
+    };
+
+    this.Turtle.prototype.addInstruction = function (symbol, action) {
+        this.instructions[symbol] = action;
+    };
+
+    this.Turtle.prototype.start = function (word, point) {
+        this.word = word;
+        this.currentActionIndex = 0;
+        this.currentActionTime = 0;
+        this.lastUpdateTime = false;
+        this.currentAction = false;
+
+        this.position = point;
+    };
+
+    this.Turtle.prototype.update = function () {
+        if (!this.word || this.currentActionIndex < 0 || this.currentActionIndex > this.word.length) {
+            return;
+        }
+
+        var now = aiScript.pInst.millis();
+
+        var symbol = this.word[this.currentActionIndex];
+        var desiredActionCtor = this.instructions[symbol];
+
+        if (!desiredActionCtor) {
+            this.nextSymbol();
+        } else {
+            if (!this.currentAction) {
+                this.currentAction = new desiredActionCtor();
+                this.currentAction.enter(this);
+                this.lastUpdateTime = now;
+            }
+
+            if (!this.currentAction.update(this, this.currentActionTime, aiScript.pInst.lerp)) {
+                this.nextSymbol();
+            }
+        }
+
+        this.currentActionTime += now - (this.lastUpdateTime || 0);
+        this.lastUpdateTime = now;
+    };
+
+    this.Turtle.prototype.draw = function (g) {
+        for (var i = 0, n = this.actionHistory.length; i < n; ++i) {
+            this.actionHistory[i].draw(this, g, false);
+        }
+
+        if (this.currentAction) {
+            this.currentAction.draw(this, g, true);
+        };
+    };
+
+    this.Turtle.prototype.nextSymbol = function () {
+        if (this.currentAction) {
+            this.actionHistory.push(this.currentAction);
+            this.currentAction.exit(this);
+        }
+
+        this.currentActionIndex += 1;
+        this.currentActionTime = 0;
+        this.currentAction = false;
+    };
+
+    this.MoveForwardAction = function(distance, time) {
+        return (function MoveForwardDist(distance, time) {
+            var action = function() {
+                
+            };
+
+            action.prototype.enter = function (turtle) {
+                this.initial = turtle.position.clone();
+
+                this.target = turtle.heading.clone().norm().mul(distance).add(turtle.position);
+                this.t = 0;
+            };
+
+            action.prototype.update = function (turtle, elapsed, lerp) {
+                this.t = elapsed / time;
+
+                turtle.position.x = lerp(this.initial.x, this.target.x, this.t);
+                turtle.position.y = lerp(this.initial.y, this.target.y, this.t);
+
+                return this.t <= 1.0;
+            };
+
+            action.prototype.draw = function (turtle, g, current) {
+                g.stroke(255, 255, 255);
+                if (current) {
+                    g.fill(255, 255, 255);
+                    g.ellipse(turtle.position.x, turtle.position.y, 5, 5);
+                    g.line(this.initial.x, this.initial.y, turtle.position.x, turtle.position.y);
+                } else {
+                    g.fill(0, 0, 255);
+                    g.line(this.initial.x, this.initial.y, this.target.x, this.target.y);
+                    g.ellipse(this.initial.x, this.initial.y, 5, 5);
+                    g.ellipse(this.target.x, this.target.y, 5, 5);
+                }
+            };
+
+            action.prototype.exit = function (turtle) {
+
+            };
+
+           return action;
+        })(distance, time);
+    };
+
+    this.RotateAction = function (angle) {
+        return (function Rotate(angle) {
+            var action = function () {
+
+            };
+
+            action.prototype.enter = function (turtle) {
+                this.initial = turtle.position.clone();
+
+                console.log(this.initial.angleTo(this.initial.clone().add(new Point(0, 1))));
+
+                this.angleIndicator = new Point(50, 0).rotate(1.57);
+                
+                console.log(this.initial.angleTo(this.angleIndicator));
+                console.log(this.angleIndicator);
+            };
+
+            action.prototype.update = function (turtle, elapsed, lerp) {
+                return false;
+            };
+
+            action.prototype.draw = function (turtle, g, current) {
+                g.fill(255, 0, 0);
+                g.ellipse(this.angleIndicator.x, this.angleIndicator.y, 5, 5);
+            };
+
+            action.prototype.exit = function (turtle) {
+
+            };
+
+            return action;
+        })(angle);
     };
 };

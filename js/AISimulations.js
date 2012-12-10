@@ -15,6 +15,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Alphabet = modules.DevelopmentalSystems.Alphabet;
     var Axiom = modules.DevelopmentalSystems.Axiom;
     var Rule = modules.DevelopmentalSystems.ProductionRule;
+    var Turtle = modules.DevelopmentalSystems.Turtle;
 
     this.LineTestSimulation = function () {
 
@@ -592,7 +593,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
     };
 
-    this.LSystemSimulation = function () {
+    this.LSystemSimulation = function LSystemSimulation () {
 
     };
 
@@ -615,15 +616,23 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.lSystem = new LSystem(this.alphabet, this.axiom, this.rules);
 
         for (var i = 0; i < 4; ++i) {
-            console.log('t = ', i, ' =', this.lSystem.word(i));
+            console.log('t = ', i, ' :', this.lSystem.word(i));
         }
+
+        this.turtle = new Turtle();
+
+        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(30, 1000));
+        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(-Math.PI));
+        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.RotateAction(1.57));
+
+        this.turtle.start(['F', 'F', '+', 'F'], new Point(100, 200));
     };
 
     this.LSystemSimulation.prototype.update = function () {
-
+        this.turtle.update();
     };
 
     this.LSystemSimulation.prototype.draw = function (g) {
-
+        this.turtle.draw(g);
     };
 };
