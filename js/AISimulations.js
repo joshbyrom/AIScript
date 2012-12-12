@@ -619,26 +619,30 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             console.log('t = ', i, ' :', this.lSystem.word(i));
         }
 
-        this.koch = function () { };
-        this.koch.alphabet = new Alphabet('F', '+', '-');
-        this.koch.axiom = new Axiom('F');
-        this.koch.rules = [
-            new Rule('F -> F, +, F, -, -, F, +, F'),
+        this.plant = function () { };
+        this.plant.alphabet = new Alphabet('F', '+', '-', '[', ']');
+        this.plant.axiom = new Axiom('F');
+        this.plant.rules = [
+            new Rule('F -> F[+F]F[-F[+F][-F]]F'),
             new Rule('+ -> +'),
-            new Rule('- -> -')
+            new Rule('- -> -'),
+            new Rule('[ -> ['),
+            new Rule('] -> ]')
         ];
-        this.koch.lSystem = new LSystem(this.koch.alphabet, this.koch.axiom, this.koch.rules);
+        this.plant.lSystem = new LSystem(this.plant.alphabet, this.plant.axiom, this.plant.rules);
 
-        this.koch.lSystem.word(5);
+        this.plant.lSystem.word(5);
 
         this.turtle = new Turtle();
 
-        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(10, 100));
+        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(7, 50));
         this.turtle.addInstruction('f', new modules.DevelopmentalSystems.MoveForwardAction(10, 100, false));
-        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(1.047));
-        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.RotateAction(-1.047));
+        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(0.506));
+        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.RotateAction(-0.506));
+        this.turtle.addInstruction('[', new modules.DevelopmentalSystems.SaveAction());
+        this.turtle.addInstruction(']', new modules.DevelopmentalSystems.RestoreAction());
 
-        this.turtle.start(this.koch.lSystem.word(4), new Point(0, 400));
+        this.turtle.start(this.plant.lSystem.word(4), new Point(200, 450), new Point(0, -1));
     };
 
     this.LSystemSimulation.prototype.update = function () {

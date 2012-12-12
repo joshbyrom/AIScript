@@ -55,6 +55,8 @@
 
         if (this.successor.indexOf(',') !== -1) {
             this.successor = this.successor.split(',');
+        } else if (this.successor.length > 2) {
+            this.successor = Array.prototype.slice.call(this.successor);
         }
 
         if(Array.isArray(this.successor)) {
@@ -156,7 +158,7 @@
 
         this.actionHistory = [];
 
-        this.savedState = false;
+        this.savedState = [];
     };
 
     this.Turtle.prototype.addInstruction = function (symbol, action) {
@@ -223,14 +225,20 @@
         this.currentAction = false;
     };
 
+    this.Turtle.prototype.lastAction = function () {
+        if (this.actionHistory.length <= 1) return null;
+        return this.actionHistory[this.actionHistory.length - 1];
+    };
+
     this.MoveForwardAction = function(distance, time, draw) {
         return (function (distance, time, draw) {
             var action = function MoveForward () {
-                
             };
 
             action.prototype.enter = function (turtle) {
-                this.initial = turtle.position.clone();
+                var last = turtle.lastAction();
+
+                this.initial = last && last.target ? last.target.clone() : turtle.position.clone();
 
                 this.target = turtle.heading.clone().norm().mul(distance).add(turtle.position);
                 this.t = 0;
@@ -279,8 +287,6 @@
             };
 
             action.prototype.enter = function (turtle) {
-                this.initial = turtle.position.clone();
-
                 turtle.heading.rotate(angle).norm();
             };
 
@@ -308,13 +314,15 @@
             };
 
             action.prototype.enter = function (turtle) {
-                turtle.savedState = {
-                    position: turtle.position.clone(),
-                    heading: turtle.heading.clone()
-                };
+
             };
 
             action.prototype.update = function (turtle, elapsed, lerp) {
+                turtle.savedState.push({
+                    position: turtle.position.clone(),
+                    heading: turtle.heading.clone()
+                });
+
                 return false;
             };
 
@@ -338,14 +346,15 @@
             };
 
             action.prototype.enter = function (turtle) {
-                if (turtle.savedState) {
-                    turtle.position = turtle.savedState.position;
-                    turtle.heading = turtle.savedState.heading;
-                };
-                turtle.savedState = false;
+
             };
 
             action.prototype.update = function (turtle, elapsed, lerp) {
+                var state = turtle.savedState.pop();
+                if (state) {
+                    turtle.position = state.position;
+                    turtle.heading = state.heading;
+                };
                 return false;
             };
 
