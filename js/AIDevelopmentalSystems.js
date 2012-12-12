@@ -74,6 +74,32 @@
         }
     };
 
+    this.StochasticRule = function (predecessor) {
+        this.predecessor = predecessor;
+        this.rules = [];
+    };
+
+    this.StochasticRule.prototype.shuffleRules = function () {
+        var o = this.rules;
+        for (var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    };
+
+    this.StochasticRule.prototype.addRule = function (rule) {
+        if (rule.predecessor === this.predecessor) {
+            this.rules.push(rule);
+        }
+    };
+
+    this.StochasticRule.prototype.apply = function (symbol, t) {
+        if (this.predecessor === symbol && this.rules.length > 0) {
+            this.shuffleRules();
+            return this.rules[0].apply(symbol, t);
+        } else {
+            return false;
+        }
+    };
+
+
     this.LSystem = function (alphabet, axiom, rules) {
         this.alphabet = alphabet;
         this.axiom = axiom;
