@@ -123,7 +123,6 @@
                 successor = rule.apply(symbol, t);
 
                 if (successor) {
-                    console.log(symbol, ' ->', successor);
                     if (Array.isArray(successor)) {
                         next = next.concat(successor);
                     } else {
@@ -156,6 +155,8 @@
         this.lastUpdateTime = false;
 
         this.actionHistory = [];
+
+        this.savedState = false;
     };
 
     this.Turtle.prototype.addInstruction = function (symbol, action) {
@@ -223,8 +224,8 @@
     };
 
     this.MoveForwardAction = function(distance, time, draw) {
-        return (function MoveForwardDist(distance, time, draw) {
-            var action = function() {
+        return (function (distance, time, draw) {
+            var action = function MoveForward () {
                 
             };
 
@@ -236,7 +237,8 @@
             };
 
             action.prototype.update = function (turtle, elapsed, lerp) {
-                this.t = elapsed / time;
+                this.t = elapsed / Math.max(time, 0.00001);
+                this.t = Math.max(this.t, Math.min(this.t, 1.0), 0.0);
 
                 turtle.position.x = lerp(this.initial.x, this.target.x, this.t);
                 turtle.position.y = lerp(this.initial.y, this.target.y, this.t);
@@ -256,8 +258,8 @@
                     if (draw) {
                         g.fill(0, 0, 255);
                         g.line(this.initial.x, this.initial.y, this.target.x, this.target.y);
-                        g.ellipse(this.initial.x, this.initial.y, 5, 5);
-                        g.ellipse(this.target.x, this.target.y, 5, 5);
+                        //g.ellipse(this.initial.x, this.initial.y, 5, 5);
+                        //g.ellipse(this.target.x, this.target.y, 5, 5);
                     }
                 }
             };
@@ -271,8 +273,8 @@
     };
 
     this.RotateAction = function (angle) {
-        return (function Rotate(angle) {
-            var action = function () {
+        return (function (angle) {
+            var action = function Rotate () {
 
             };
 
@@ -297,5 +299,66 @@
 
             return action;
         })(angle);
+    };
+
+    this.SaveAction = function () {
+        return (function () {
+            var action = function Save () {
+
+            };
+
+            action.prototype.enter = function (turtle) {
+                turtle.savedState = {
+                    position: turtle.position.clone(),
+                    heading: turtle.heading.clone()
+                };
+            };
+
+            action.prototype.update = function (turtle, elapsed, lerp) {
+                return false;
+            };
+
+            action.prototype.draw = function (turtle, g, current) {
+
+
+            };
+
+            action.prototype.exit = function (turtle) {
+
+            };
+
+            return action;
+        })();
+    };
+
+    this.RestoreAction = function () {
+        return (function () {
+            var action = function Restore () {
+
+            };
+
+            action.prototype.enter = function (turtle) {
+                if (turtle.savedState) {
+                    turtle.position = turtle.savedState.position;
+                    turtle.heading = turtle.savedState.heading;
+                };
+                turtle.savedState = false;
+            };
+
+            action.prototype.update = function (turtle, elapsed, lerp) {
+                return false;
+            };
+
+            action.prototype.draw = function (turtle, g, current) {
+
+
+            };
+
+            action.prototype.exit = function (turtle) {
+
+            };
+
+            return action;
+        })();
     };
 };

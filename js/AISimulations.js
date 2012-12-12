@@ -601,7 +601,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.axiom = new Axiom('dl');
         this.alphabet = new Alphabet('gr', 'gl', 'dr', 'dl');
 
-        // test all forms of rule construction
+        // test all forms of rule construction (this is bacteria growth)
         this.rules = [
             new Rule('dr -> dl, gr'),
             new Rule('dl', ['gl', 'dr']),
@@ -619,14 +619,26 @@ AIScript.modules.Simulations = function (aiScript, modules) {
             console.log('t = ', i, ' :', this.lSystem.word(i));
         }
 
+        this.koch = function () { };
+        this.koch.alphabet = new Alphabet('F', '+', '-');
+        this.koch.axiom = new Axiom('F');
+        this.koch.rules = [
+            new Rule('F -> F, +, F, -, -, F, +, F'),
+            new Rule('+ -> +'),
+            new Rule('- -> -')
+        ];
+        this.koch.lSystem = new LSystem(this.koch.alphabet, this.koch.axiom, this.koch.rules);
+
+        this.koch.lSystem.word(5);
+
         this.turtle = new Turtle();
 
-        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(30, 1000));
-        this.turtle.addInstruction('f', new modules.DevelopmentalSystems.MoveForwardAction(30, 200, false));
-        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(-1.57));
-        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.RotateAction(1.57));
+        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(10, 100));
+        this.turtle.addInstruction('f', new modules.DevelopmentalSystems.MoveForwardAction(10, 100, false));
+        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(1.047));
+        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.RotateAction(-1.047));
 
-        this.turtle.start(['F', 'F', '-', 'F', 'F', 'F', '-', 'F', '-', 'F', 'F', '+', 'F', '-', 'F', '+', 'f', 'f', 'F', '+', 'F', 'F', 'F', '+', 'F', '+', 'F', 'F', 'F'], new Point(100, 200));
+        this.turtle.start(this.koch.lSystem.word(4), new Point(0, 400));
     };
 
     this.LSystemSimulation.prototype.update = function () {
