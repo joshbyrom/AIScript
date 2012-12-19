@@ -635,7 +635,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         this.turtle = new Turtle();
 
-        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(7, 10));
+        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.StochasticMoveForwardAction(3, 7, 1));
         this.turtle.addInstruction('f', new modules.DevelopmentalSystems.MoveForwardAction(7, 10, false));
         this.turtle.addInstruction('-', new modules.DevelopmentalSystems.StochasticRotateAction(0.262, 0.79));
         this.turtle.addInstruction('+', new modules.DevelopmentalSystems.StochasticRotateAction(-0.262, -0.79));

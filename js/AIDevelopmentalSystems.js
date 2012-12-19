@@ -200,6 +200,12 @@
 
         this.position = point || this.position;
         this.heading = heading || this.heading || new Point(1, 0);
+
+        this.startTime = aiScript.pInst.millis();
+    };
+
+    this.Turtle.prototype.simulationTime = function () {
+        return aiScript.pInst.millis() - this.startTime;
     };
 
     this.Turtle.prototype.update = function () {
@@ -231,8 +237,9 @@
     };
 
     this.Turtle.prototype.draw = function (g) {
-        for (var i = 0, n = this.actionHistory.length; i < n; ++i) {
-            this.actionHistory[i].draw(this, g, false);
+        for (var i = 0, n = this.actionHistory.length, current = null; i < n; ++i) {
+            current = this.actionHistory[i];
+            current.draw(this, g, false);
         }
 
         if (this.currentAction) {
@@ -256,9 +263,36 @@
         return this.actionHistory[this.actionHistory.length - 1];
     };
 
+    this.StochasticMoveForwardAction = function (minDistance, maxDistance, ticks, draw) {
+        return (function (minDistance, maxDistance, ticks, draw) {
+            var action = function MoveForward() {
+                var dist = minDistance + (Math.random() * (maxDistance - minDistance));
+                this.innerAction = new (modules.DevelopmentalSystems.MoveForwardAction(dist, ticks, draw))();
+            };
+
+            action.prototype.enter = function (turtle) {
+                this.innerAction.enter(turtle);
+            };
+
+            action.prototype.update = function (turtle, elapsed, lerp) {
+                return this.innerAction.update(turtle, elapsed, lerp);
+            };
+
+            action.prototype.draw = function (turtle, g, current) {
+                this.innerAction.draw(turtle, g, current);
+            };
+
+            action.prototype.exit = function (turtle) {
+                this.innerAction.exit(turtle);
+            };
+
+            return action;
+        })(minDistance, maxDistance, ticks, draw);
+    };
+
     this.MoveForwardAction = function(distance, ticks, draw) {
         return (function (distance, ticks, draw) {
-            var action = function MoveForward () {
+            var action = function MoveForward() {
             };
 
             action.prototype.enter = function (turtle) {
@@ -272,6 +306,8 @@
             };
 
             action.prototype.update = function (turtle, elapsed, lerp) {
+                if (distance === 0) return false;
+
                 this.t = this.ticks / Math.max(ticks, 1);
 
                 turtle.position.x = lerp(this.initial.x, this.target.x, this.t);
