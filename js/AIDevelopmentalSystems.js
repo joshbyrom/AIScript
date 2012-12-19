@@ -273,13 +273,12 @@
 
             action.prototype.update = function (turtle, elapsed, lerp) {
                 this.t = this.ticks / Math.max(ticks, 1);
-                this.t = Math.max(this.t, Math.min(this.t, 1.0), 0.0);
 
                 turtle.position.x = lerp(this.initial.x, this.target.x, this.t);
                 turtle.position.y = lerp(this.initial.y, this.target.y, this.t);
 
                 this.ticks += 1;
-                return this.t <= 1.0;
+                return this.ticks <= ticks;
             };
 
             action.prototype.draw = function (turtle, g, current) {
@@ -333,6 +332,34 @@
 
             return action;
         })(angle);
+    };
+
+    this.StochasticRotateAction = function (minAngle, maxAngle) {
+        return (function (minAngle, maxAngle) {
+            var action = function Rotate() {
+
+            };
+
+            action.prototype.enter = function (turtle) {
+                var angle = minAngle + (Math.random() * (maxAngle - minAngle));
+                turtle.heading.rotate(angle).norm();
+            };
+
+            action.prototype.update = function (turtle, elapsed, lerp) {
+                return false;
+            };
+
+            action.prototype.draw = function (turtle, g, current) {
+
+
+            };
+
+            action.prototype.exit = function (turtle) {
+
+            };
+
+            return action;
+        })(minAngle, maxAngle);
     };
 
     this.SaveAction = function () {

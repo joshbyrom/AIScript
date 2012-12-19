@@ -635,10 +635,10 @@ AIScript.modules.Simulations = function (aiScript, modules) {
 
         this.turtle = new Turtle();
 
-        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(7, 50));
-        this.turtle.addInstruction('f', new modules.DevelopmentalSystems.MoveForwardAction(10, 100, false));
-        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.RotateAction(0.506));
-        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.RotateAction(-0.506));
+        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.MoveForwardAction(7, 10));
+        this.turtle.addInstruction('f', new modules.DevelopmentalSystems.MoveForwardAction(7, 10, false));
+        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.StochasticRotateAction(0.262, 0.79));
+        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.StochasticRotateAction(-0.262, -0.79));
         this.turtle.addInstruction('[', new modules.DevelopmentalSystems.SaveAction());
         this.turtle.addInstruction(']', new modules.DevelopmentalSystems.RestoreAction());
 
