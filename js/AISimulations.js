@@ -642,7 +642,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.turtle.addInstruction('[', new modules.DevelopmentalSystems.SaveAction());
         this.turtle.addInstruction(']', new modules.DevelopmentalSystems.RestoreAction());
 
-        this.turtle.start(this.plant.lSystem.word(4), new Point(200, 450), new Point(0, -1));
+        this.turtle.start(this.plant.lSystem.word(4), new Point(300, aiScript.pInst.height), new Point(0, -1));
     };
 
     this.LSystemSimulation.prototype.update = function () {

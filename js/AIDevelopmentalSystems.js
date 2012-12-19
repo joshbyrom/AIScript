@@ -256,8 +256,8 @@
         return this.actionHistory[this.actionHistory.length - 1];
     };
 
-    this.MoveForwardAction = function(distance, time, draw) {
-        return (function (distance, time, draw) {
+    this.MoveForwardAction = function(distance, ticks, draw) {
+        return (function (distance, ticks, draw) {
             var action = function MoveForward () {
             };
 
@@ -268,15 +268,17 @@
 
                 this.target = turtle.heading.clone().norm().mul(distance).add(turtle.position);
                 this.t = 0;
+                this.ticks = 0;
             };
 
             action.prototype.update = function (turtle, elapsed, lerp) {
-                this.t = elapsed / Math.max(time, 0.00001);
+                this.t = this.ticks / Math.max(ticks, 1);
                 this.t = Math.max(this.t, Math.min(this.t, 1.0), 0.0);
 
                 turtle.position.x = lerp(this.initial.x, this.target.x, this.t);
                 turtle.position.y = lerp(this.initial.y, this.target.y, this.t);
 
+                this.ticks += 1;
                 return this.t <= 1.0;
             };
 
@@ -284,7 +286,7 @@
                 g.stroke(255, 255, 255);
                 if (current) {
                     g.fill(255, 255, 255);
-                    g.ellipse(turtle.position.x, turtle.position.y, 5, 5);
+                    //g.ellipse(turtle.position.x, turtle.position.y, 5, 5);
                     if (draw) {
                         g.line(this.initial.x, this.initial.y, turtle.position.x, turtle.position.y);
                     }
@@ -303,7 +305,7 @@
             };
 
            return action;
-        })(distance, time, draw === undefined ? true : draw);
+        })(distance, ticks, draw === undefined ? true : draw);
     };
 
     this.RotateAction = function (angle) {
