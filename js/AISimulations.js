@@ -15,6 +15,7 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     var Alphabet = modules.DevelopmentalSystems.Alphabet;
     var Axiom = modules.DevelopmentalSystems.Axiom;
     var Rule = modules.DevelopmentalSystems.ProductionRule;
+    var StochasticRule = modules.DevelopmentalSystems.StochasticRule;
     var Turtle = modules.DevelopmentalSystems.Turtle;
 
     this.LineTestSimulation = function () {
@@ -622,8 +623,13 @@ AIScript.modules.Simulations = function (aiScript, modules) {
         this.plant = function () { };
         this.plant.alphabet = new Alphabet('F', '+', '-', '[', ']');
         this.plant.axiom = new Axiom('F');
+
+        var leftOrRight = new StochasticRule('F');
+        leftOrRight.addRule(new Rule('F -> F[+F]F[-F[+F][-F]]F'));
+        leftOrRight.addRule(new Rule('F -> F[+F][-F[+F][-F]]F'));
+
         this.plant.rules = [
-            new Rule('F -> F[+F]F[-F[+F][-F]]F'),
+            leftOrRight,
             new Rule('+ -> +'),
             new Rule('- -> -'),
             new Rule('[ -> ['),
