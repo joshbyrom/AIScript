@@ -99,6 +99,17 @@
         }
     };
 
+    this.ContextSensitiveRule = function (predecessor, successor, leftContext, rightContext) {
+        this.predecessor = predecessor;
+        this.successor = successor;
+        this.leftContext = leftContext;
+        this.rightContext = rightContext;
+    };
+
+    this.ContextSensitiveRule.prototype.apply = function (symbol, t) {
+
+    };
+
 
     this.LSystem = function (alphabet, axiom, rules) {
         this.alphabet = alphabet;
