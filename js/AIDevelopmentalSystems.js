@@ -106,8 +106,12 @@
         this.rightContext = rightContext;
     };
 
-    this.ContextSensitiveRule.prototype.apply = function (symbol, t) {
+    this.ContextSensitiveRule.prototype.apply = function (symbol, t, left, right) {
+        if (this.predecessor === symbol && this.leftContext === left && this.rightContext === right) {
+            return this.successor;
+        }
 
+        return false;
     };
 
 
@@ -148,9 +152,11 @@
             rule = null,
             k = 0;
 
-        var symbol = '';
+        var symbol = '', lastSymbol = '', nextSymbol = '';
         for (var i = 0; i < n; ++i) {
+            lastSymbol = symbol;
             symbol = last[i];
+            nextSymbol = last[(i + 1) % last.length];
 
             if (!this.alphabet.contains(symbol)) {
                 console.log('skipping invalid character(s)!');
@@ -159,7 +165,7 @@
 
             for (k = 0; k < rn; ++k) {
                 rule = this.rules[k];
-                successor = rule.apply(symbol, t);
+                successor = rule.apply(symbol, t, lastSymbol, nextSymbol);
 
                 if (successor) {
                     if (Array.isArray(successor)) {
