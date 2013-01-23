@@ -102,17 +102,53 @@
     this.ContextSensitiveRule = function (predecessor, successor, leftContext, rightContext) {
         this.predecessor = predecessor;
         this.successor = successor;
-        this.leftContext = leftContext;
-        this.rightContext = rightContext;
+        this.leftContext = leftContext || 'ignore';
+        this.rightContext = rightContext || 'ignore';
+
+        this.ignore = [];
     };
 
-    this.ContextSensitiveRule.prototype.apply = function (symbol, t, left, right) {
-        if (this.predecessor === symbol && this.leftContext === left && this.rightContext === right) {
-            return this.successor;
+    this.ContextSensitiveRule.prototype.apply = function (symbol, t, word, index) {
+        if (this.predecessor === symbol) {
+            if(this.checkLeft(word, index) && this.checkRight(word, index)) {
+                return this.successor;
+            }
+        }
+
+        if (this.predecessor === symbol) {
+            return this.predecessor;
         }
 
         return false;
     };
+
+    this.ContextSensitiveRule.prototype.checkLeft = function (word, index) {
+        if (this.leftContext === 'ignore') {
+            return true;
+        };
+
+        var left = word[index];
+        for (var i = index - 1; i >= 0; --i) {
+            left = word[i];
+
+            if (left === this.leftContext) {
+                return true;
+            } else if (this.ignore.indexOf(left) < 0) {
+                return false;
+            }
+        }
+    };
+
+
+    this.ContextSensitiveRule.prototype.checkRight = function (word, index) {
+        if (this.rightContext === 'ignore') {
+            return true;
+        };
+
+
+    };
+
+
 
 
     this.LSystem = function (alphabet, axiom, rules) {
@@ -152,20 +188,18 @@
             rule = null,
             k = 0;
 
-        var symbol = '', lastSymbol = '', nextSymbol = '';
+        var symbol = '';
         for (var i = 0; i < n; ++i) {
-            lastSymbol = symbol;
             symbol = last[i];
-            nextSymbol = last[(i + 1) % last.length];
 
             if (!this.alphabet.contains(symbol)) {
-                console.log('skipping invalid character(s)!');
+                console.log(symbol, 'skipping invalid character(s)!');
                 continue;
             }
 
             for (k = 0; k < rn; ++k) {
                 rule = this.rules[k];
-                successor = rule.apply(symbol, t, lastSymbol, nextSymbol);
+                successor = rule.apply(symbol, t, last, i);
 
                 if (successor) {
                     if (Array.isArray(successor)) {
@@ -268,6 +302,10 @@
         if (this.currentAction) {
             this.actionHistory.push(this.currentAction);
             this.currentAction.exit(this);
+
+            if (this.currentAction.onFinished) {
+                this.currentAction.onFinished();
+            }
         }
 
         this.currentActionIndex += 1;
@@ -305,6 +343,33 @@
 
             return action;
         })(minDistance, maxDistance, ticks, draw);
+    };
+
+    this.ComplexAction = function (actions) {
+        return (function (actions) {
+            var action = function Complex() {
+                var dist = minDistance + (Math.random() * (maxDistance - minDistance));
+                this.innerAction = new (modules.DevelopmentalSystems.MoveForwardAction(dist, ticks, draw))();
+            };
+
+            action.prototype.enter = function (turtle) {
+                this.innerAction.enter(turtle);
+            };
+
+            action.prototype.update = function (turtle, elapsed, lerp) {
+                return this.innerAction.update(turtle, elapsed, lerp);
+            };
+
+            action.prototype.draw = function (turtle, g, current) {
+                this.innerAction.draw(turtle, g, current);
+            };
+
+            action.prototype.exit = function (turtle) {
+                this.innerAction.exit(turtle);
+            };
+
+            return action;
+        })(actions);
     };
 
     this.MoveForwardAction = function(distance, ticks, draw) {

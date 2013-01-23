@@ -34,6 +34,10 @@
         var runLSim = function () {
             window.aiScript.simulate(new AIScript.modules.Simulations.LSystemSimulation());
         };
+
+        var runCLSim = function () {
+            window.aiScript.simulate(new AIScript.modules.Simulations.ContextSensitiveSimulation());
+        };
     </script>
 </head>
 <body>
@@ -46,6 +50,7 @@
                 <li onclick="runEntSim();">Run Entity Simulation</li>
                 <li onclick="runInputSim();">Run Button + Layout Simulation</li>
                 <li onclick="runLSim();">Run LSystem Simulation</li>
+                <li onclick="runCLSim();">Run Context Sensitive LSystem Simulation</li>
             </ul>
         </div>
         <canvas id="Main" width="800" height="450"></canvas>

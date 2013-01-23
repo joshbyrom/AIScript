@@ -658,4 +658,56 @@ AIScript.modules.Simulations = function (aiScript, modules) {
     this.LSystemSimulation.prototype.draw = function (g) {
         this.turtle.draw(g);
     };
+
+
+    this.ContextSensitiveSimulation = function () {
+
+    };
+
+    this.ContextSensitiveSimulation.prototype.enter = function (last) {
+        this.axiom = new Axiom('S','[','-','F','[','-','F',']','F',']','F','[','+','F','[','+','F',']','F',']','F','[','-','F',']','F');
+        this.alphabet = new Alphabet('F', 'S', 'Q', '+', '-', '[', ']');
+
+
+        var rule = new modules.DevelopmentalSystems.ContextSensitiveRule('F', 'S', 'S');
+        rule.ignore.push('+');
+        rule.ignore.push('-');
+        rule.ignore.push('[');
+        rule.ignore.push(']');
+
+        this.rules = [
+            rule,
+            new Rule('S -> Q'),
+            new Rule('Q -> Q'),
+            new Rule('+ -> +'),
+            new Rule('- -> -'),
+            new Rule('[ -> ['),
+            new Rule('] -> ]')
+        ];
+
+        this.lSystem = new LSystem(this.alphabet, this.axiom, this.rules);
+        
+
+        for (var i = 0; i < 7; ++i) {
+            console.log(this.lSystem.word(i));
+        }
+
+
+        this.turtle = new Turtle();
+        this.turtle.addInstruction('F', new modules.DevelopmentalSystems.StochasticMoveForwardAction(3, 7, 1));
+        this.turtle.addInstruction('-', new modules.DevelopmentalSystems.StochasticRotateAction(0.262, 0.79));
+        this.turtle.addInstruction('+', new modules.DevelopmentalSystems.StochasticRotateAction(-0.262, -0.79));
+        this.turtle.addInstruction('[', new modules.DevelopmentalSystems.SaveAction());
+        this.turtle.addInstruction(']', new modules.DevelopmentalSystems.RestoreAction());
+
+        this.turtle.start(this.lSystem.word(20), new Point(300, aiScript.pInst.height), new Point(0, -1));
+    };
+
+    this.ContextSensitiveSimulation.prototype.update = function () {
+        this.turtle.update();
+    };
+
+    this.ContextSensitiveSimulation.prototype.draw = function (g) {
+        this.turtle.draw(g);
+    };
 };
